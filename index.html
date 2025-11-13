@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>L'Oréal | Smart Routine &amp; Product Advisor</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+
+  <body>
+    <div class="page-wrapper">
+      <!------- Header / Branding ------->
+      <header class="site-header">
+        <!-- Language Toggle -->
+        <button id="languageToggle" class="language-toggle" aria-label="Toggle language direction">
+          <i class="fa-solid fa-language"></i>
+          <span id="languageText">العربية</span>
+        </button>
+        
+        <!-- Dark Mode Toggle -->
+        <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+        
+        <img src="img/loreal-logo.png" alt="L'Oréal Logo" class="logo" />
+        <h1 class="site-title">Smart Routine &amp; Product Advisor</h1>
+        
+        <!-- Quick Action Buttons -->
+        <div class="header-actions">
+          <button id="skinQuizBtn" class="header-action-btn" title="Take Skin Quiz">
+            <i class="fa-solid fa-clipboard-question"></i>
+            <span>Skin Quiz</span>
+          </button>
+          <button id="favoritesBtn" class="header-action-btn" title="View Favorites">
+            <i class="fa-solid fa-heart"></i>
+            <span>Favorites</span>
+            <span id="favoritesCount" class="badge">0</span>
+          </button>
+          <button id="compareBtn" class="header-action-btn" title="Compare Products">
+            <i class="fa-solid fa-code-compare"></i>
+            <span>Compare</span>
+          </button>
+          <button id="analyticsBtn" class="header-action-btn" title="View Analytics">
+            <i class="fa-solid fa-chart-line"></i>
+            <span>My Stats</span>
+          </button>
+          <button id="achievementsBtn" class="header-action-btn" title="View Achievements">
+            <i class="fa-solid fa-trophy"></i>
+            <span>Badges</span>
+            <span id="achievementCount" class="badge">0</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Search & Filter Section -->
+      <div class="search-section">
+        <div class="search-filter-container">
+          <!-- Search Input -->
+          <div class="search-box">
+            <i class="fa-solid fa-search"></i>
+            <input 
+              type="text" 
+              id="productSearch" 
+              placeholder="Search products by name or keyword..."
+              autocomplete="off"
+            />
+            <button id="clearSearch" class="clear-search-btn" style="display: none;">
+              <i class="fa-solid fa-times"></i>
+            </button>
+          </div>
+          
+          <!-- Category Filter -->
+          <select id="categoryFilter">
+            <option value="">All Categories</option>
+            <option value="cleanser">Cleansers</option>
+            <option value="moisturizer">Moisturizers & Treatments</option>
+            <option value="haircare">Haircare</option>
+            <option value="makeup">Makeup</option>
+            <option value="hair color">Hair Color</option>
+            <option value="hair styling">Hair Styling</option>
+            <option value="men's grooming">Men's Grooming</option>
+            <option value="suncare">Suncare</option>
+            <option value="fragrance">Fragrance</option>
+          </select>
+        </div>
+        
+        <!-- Search Results Info -->
+        <div id="searchInfo" class="search-info" style="display: none;"></div>
+        
+        <!-- Natural Language Search Hint -->
+        <div class="nl-search-hint">
+          <i class="fa-solid fa-wand-sparkles"></i>
+          <span>Smart search enabled! Try queries like "affordable moisturizers" or "products with retinol"</span>
+        </div>
+      </div>
+
+      <!-- Quick Routine Templates -->
+      <div class="routine-templates">
+        <h3><i class="fa-solid fa-bolt"></i> Quick Start Templates</h3>
+        <p class="templates-subtitle">Not sure where to begin? Try one of our expertly curated routines!</p>
+        <div class="templates-grid">
+          <button class="template-btn" data-template="acne-fighting" onclick="applyTemplate('acne-fighting')">
+            <i class="fa-solid fa-shield-heart"></i>
+            <span class="template-name">Acne-Fighting</span>
+            <span class="template-desc">Clear & balanced skin</span>
+          </button>
+          <button class="template-btn" data-template="anti-aging" onclick="applyTemplate('anti-aging')">
+            <i class="fa-solid fa-sparkles"></i>
+            <span class="template-name">Anti-Aging</span>
+            <span class="template-desc">Youthful & radiant</span>
+          </button>
+          <button class="template-btn" data-template="hydration-boost" onclick="applyTemplate('hydration-boost')">
+            <i class="fa-solid fa-droplet"></i>
+            <span class="template-name">Hydration Boost</span>
+            <span class="template-desc">Deeply moisturized</span>
+          </button>
+          <button class="template-btn" data-template="minimalist" onclick="applyTemplate('minimalist')">
+            <i class="fa-solid fa-leaf"></i>
+            <span class="template-name">Minimalist</span>
+            <span class="template-desc">Simple 3-step routine</span>
+          </button>
+          <button class="template-btn" data-template="sensitive-skin" onclick="applyTemplate('sensitive-skin')">
+            <i class="fa-solid fa-heart-pulse"></i>
+            <span class="template-name">Sensitive Skin</span>
+            <span class="template-desc">Gentle & soothing</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Recommended Products Banner -->
+      <div id="recommendedBanner" class="recommended-banner" style="display: none;">
+        <div class="recommended-header">
+          <i class="fa-solid fa-sparkles"></i>
+          <h3>Recommended For You</h3>
+          <span class="recommended-subtitle">Based on your skin profile</span>
+        </div>
+        <div id="recommendedProducts" class="recommended-products-list"></div>
+      </div>
+
+      <!-- Products Grid -->
+      <div id="productsContainer" class="products-grid"></div>
+
+      <!-- Selected Products -->
+      <div class="selected-products">
+        <h2>Selected Products</h2>
+        <div id="selectedProductsList"></div>
+        
+        <!-- Cost Calculator Summary -->
+        <div id="costSummary" class="cost-summary" style="display: none;">
+          <div class="cost-header">
+            <i class="fa-solid fa-calculator"></i>
+            <h3>Routine Cost</h3>
+          </div>
+          <div class="cost-details">
+            <div class="cost-row">
+              <span>Total Cost:</span>
+              <span id="totalCost" class="cost-value">$0.00</span>
+            </div>
+            <div class="cost-row">
+              <span>Average per Product:</span>
+              <span id="avgCost" class="cost-value-secondary">$0.00</span>
+            </div>
+            <div class="cost-row">
+              <span>Estimated Monthly:</span>
+              <span id="monthlyCost" class="cost-value-secondary">$0.00</span>
+            </div>
+          </div>
+          <div id="budgetTip" class="budget-tip"></div>
+        </div>
+        
+        <button id="generateRoutine" class="generate-btn">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Routine
+        </button>
+        <button id="shoppingListBtn" class="shopping-list-btn" style="display: none;">
+          <i class="fa-solid fa-cart-shopping"></i> Create Shopping List
+        </button>
+        <button id="shareCardBtn" class="share-card-btn" style="display: none;">
+          <i class="fa-brands fa-instagram"></i> Share on Instagram
+        </button>
+      </div>
+
+      <!------- Chat Area ------->
+      <section class="chatbox">
+        <div class="chat-header">
+          <h2>Let's Build Your Routine</h2>
+          <div class="chat-header-actions">
+            <button id="personalityBtn" class="personality-btn" title="Choose AI Personality">
+              <i class="fa-solid fa-user-doctor"></i>
+            </button>
+            <button id="voiceInputBtn" class="voice-input-btn" title="Voice input">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+            <button id="exportPDFBtn" class="export-pdf-btn" title="Export routine to PDF">
+              <i class="fa-solid fa-file-pdf"></i>
+            </button>
+            <button id="shareRoutineBtn" class="share-routine-btn" title="Share routine">
+              <i class="fa-solid fa-share-nodes"></i>
+            </button>
+            <button id="clearChat" class="clear-chat-btn" title="Clear conversation history">
+              <i class="fa-solid fa-rotate-right"></i>
+            </button>
+          </div>
+        </div>
+        <div id="chatWindow" class="chat-window"></div>
+
+        <form id="chatForm" class="chat-form">
+          <label for="userInput" class="visually-hidden">Message</label>
+          <input
+            id="userInput"
+            name="userInput"
+            type="text"
+            placeholder="Ask me about products or routines…"
+            autocomplete="off"
+            required
+          />
+          <button type="submit" id="sendBtn">
+            <i class="fa-solid fa-paper-plane"></i>
+            <span class="visually-hidden">Send</span>
+          </button>
+        </form>
+      </section>
+      
+      <!-- Routine Timeline Visualization -->
+      <section id="routineTimeline" class="routine-timeline" style="display: none;">
+        <h2>Your Personalized Routine</h2>
+        <div class="timeline-container">
+          <div class="timeline-period am">
+            <div class="period-header">
+              <i class="fa-solid fa-sun"></i>
+              <h3>Morning Routine</h3>
+            </div>
+            <div id="amSteps" class="timeline-steps"></div>
+          </div>
+          <div class="timeline-period pm">
+            <div class="period-header">
+              <i class="fa-solid fa-moon"></i>
+              <h3>Evening Routine</h3>
+            </div>
+            <div id="pmSteps" class="timeline-steps"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Results Timeline Predictor -->
+      <section id="resultsPredictor" class="results-predictor" style="display: none;">
+        <div class="predictor-header">
+          <h2><i class="fa-solid fa-chart-line"></i> When Will I See Results?</h2>
+          <p class="predictor-subtitle">Based on your selected products and skin goals</p>
+        </div>
+        <div id="resultsTimeline" class="results-timeline"></div>
+      </section>
+
+      <!------- Footer Links ------->
+      <footer class="site-footer">
+        <p>&copy; 2025 L'Oréal. All rights reserved.</p>
+        <nav>
+          <!-- These URLs are placeholders -->
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Use</a>
+          <a href="#">Contact</a>
+        </nav>
+      </footer>
+    </div>
+
+    <!-- Skin Quiz Modal -->
+    <div id="skinQuizModal" class="modal skin-quiz-modal" style="display: none;">
+      <div class="modal-content quiz-content">
+        <button class="modal-close" onclick="closeSkinQuiz()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <div id="quizContainer"></div>
+      </div>
+    </div>
+    
+    <!-- Favorites Modal -->
+    <div id="favoritesModal" class="modal favorites-modal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeFavorites()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <h2><i class="fa-solid fa-heart"></i> My Favorites</h2>
+        <div id="favoritesContainer"></div>
+      </div>
+    </div>
+    
+    <!-- Compare Products Modal -->
+    <div id="compareModal" class="modal compare-modal" style="display: none;">
+      <div class="modal-content compare-content">
+        <button class="modal-close" onclick="closeCompare()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <h2><i class="fa-solid fa-code-compare"></i> Compare Products</h2>
+        <div id="compareContainer"></div>
+      </div>
+    </div>
+    
+    <!-- Share Modal -->
+    <div id="shareModal" class="modal share-modal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeShareModal()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <h2><i class="fa-solid fa-share-nodes"></i> Share Your Routine</h2>
+        <div id="shareContainer">
+          <p>Copy this link to share your routine:</p>
+          <div class="share-link-box">
+            <input type="text" id="shareLink" readonly />
+            <button onclick="copyShareLink()"><i class="fa-solid fa-copy"></i> Copy</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Shopping List Modal -->
+    <div id="shoppingListModal" class="modal shopping-list-modal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closeShoppingList()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <h2><i class="fa-solid fa-cart-shopping"></i> Shopping List</h2>
+        <div id="shoppingListContent"></div>
+        <div class="shopping-list-actions">
+          <button onclick="printShoppingList()" class="print-btn">
+            <i class="fa-solid fa-print"></i> Print List
+          </button>
+          <button onclick="copyShoppingList()" class="copy-btn">
+            <i class="fa-solid fa-copy"></i> Copy to Clipboard
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Analytics Dashboard Modal -->
+    <div id="analyticsModal" class="modal analytics-modal" style="display: none;">
+      <div class="modal-content analytics-content">
+        <button class="modal-close" onclick="closeAnalytics()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <h2><i class="fa-solid fa-chart-line"></i> Your Skincare Journey</h2>
+        <div id="analyticsContent">
+          <div class="analytics-grid">
+            <div class="stat-card">
+              <div class="stat-icon">🎯</div>
+              <div class="stat-value" id="totalRoutines">0</div>
+              <div class="stat-label">Routines Generated</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🔥</div>
+              <div class="stat-value" id="currentStreak">0</div>
+              <div class="stat-label">Day Streak</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">⭐</div>
+              <div class="stat-value" id="totalProducts">0</div>
+              <div class="stat-label">Products Tried</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon">🏆</div>
+              <div class="stat-value" id="achievementCount">0</div>
+              <div class="stat-label">Achievements</div>
+            </div>
+          </div>
+          
+          <div class="usage-timeline">
+            <h3>Weekly Activity</h3>
+            <div id="weeklyChart" class="weekly-chart"></div>
+          </div>
+          
+          <div class="milestones">
+            <h3>Milestones</h3>
+            <div id="milestonesList" class="milestones-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Personality Selector Modal -->
+    <div id="personalityModal" class="modal personality-modal" style="display: none;">
+      <div class="modal-content">
+        <button class="modal-close" onclick="closePersonality()">
+          <i class="fa-solid fa-times"></i>
+        </button>
+        <h2><i class="fa-solid fa-masks-theater"></i> Choose Your AI Assistant</h2>
+        <p class="personality-subtitle">Select the personality that best fits your style</p>
+        <div class="personality-grid">
+          <div class="personality-card" data-personality="dermatologist" onclick="selectPersonality('dermatologist')">
+            <div class="personality-icon">👨‍⚕️</div>
+            <h3>Dr. Expert</h3>
+            <p class="personality-desc">Professional dermatologist with clinical expertise</p>
+            <ul class="personality-traits">
+              <li>✓ Medical terminology</li>
+              <li>✓ Evidence-based advice</li>
+              <li>✓ Detailed explanations</li>
+            </ul>
+          </div>
+          <div class="personality-card active" data-personality="friendly" onclick="selectPersonality('friendly')">
+            <div class="personality-icon">🌟</div>
+            <h3>Friendly Guide</h3>
+            <p class="personality-desc">Warm beauty advisor who makes skincare fun</p>
+            <ul class="personality-traits">
+              <li>✓ Conversational tone</li>
+              <li>✓ Encouraging support</li>
+              <li>✓ Easy to understand</li>
+            </ul>
+          </div>
+          <div class="personality-card" data-personality="minimalist" onclick="selectPersonality('minimalist')">
+            <div class="personality-icon">🎯</div>
+            <h3>Minimalist Pro</h3>
+            <p class="personality-desc">Straight to the point, no fluff</p>
+            <ul class="personality-traits">
+              <li>✓ Concise answers</li>
+              <li>✓ Essential info only</li>
+              <li>✓ Quick & efficient</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Achievements Badge Collection Modal -->
+    <div id="achievementsModal" class="modal achievements-modal" style="display: none;">
+      <div class="achievements-content">
+        <div class="achievements-header">
+          <div>
+            <h2><i class="fa-solid fa-trophy"></i> My Achievement Collection</h2>
+            <p>Unlock badges by exploring features and building routines!</p>
+          </div>
+          <button class="modal-close" onclick="closeAchievements()">×</button>
+        </div>
+        <div id="achievementsList" class="achievements-grid"></div>
+      </div>
+    </div>
+
+    <!-- Hidden Share Card Template for Instagram -->
+    <div id="shareCardTemplate" class="share-card-template">
+      <div class="share-card-inner">
+        <div class="share-card-header">
+          <img src="img/loreal-logo.png" alt="L'Oréal" class="share-logo">
+          <h2 class="share-title">My Skincare Routine</h2>
+        </div>
+        <div id="shareCardProducts" class="share-card-products"></div>
+        <div class="share-card-footer">
+          <p class="share-tagline">✨ Powered by L'Oréal AI Routine Builder</p>
+          <p class="share-date" id="shareDate"></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- No secrets.js needed! API key is secure in Cloudflare Worker -->
+    
+    <!-- HTML2Canvas for Instagram Share Cards -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <script src="script.js"></script>
+  </body>
+</html>
