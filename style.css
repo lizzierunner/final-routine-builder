@@ -1,16 +1,20 @@
 /* —— L'Oréal Official Brand Colors —— */
 /* Based on FutureBrand's L'Oréal corporate identity */
+/* "Bold visual identity built on sophisticated but fragile subtlety" */
 :root {
-  /* Primary Brand Colors */
+  /* Primary Brand Colors - Official L'Oréal Palette */
   --loreal-red: #E30613;        /* Vibrant red - passion & energy (official L'Oréal red) */
   --loreal-black: #000000;      /* Pure black - sophistication & contrast */
   --loreal-white: #FFFFFF;      /* Pure white - clean & modern */
   
-  /* Secondary & Accent Colors */
+  /* Secondary & Accent Colors - Refined Extensions */
   --loreal-gold: #D4AF37;       /* Elegant gold - luxury & prestige */
   --loreal-rose-gold: #B76E79;  /* Rose gold - feminine & refined */
+  --loreal-burgundy: #8B1538;   /* Deep burgundy - sophisticated depth */
+  --loreal-champagne: #F7E7CE;  /* Champagne - soft luxury */
   --loreal-charcoal: #2C2C2C;   /* Soft black - subtle depth */
   --loreal-pearl: #F8F8F8;      /* Pearl white - soft elegance */
+  --loreal-cream: #FFF8F0;      /* Warm cream - inviting warmth */
   
   /* UI Support Colors */
   --loreal-gray-light: #F5F5F5; /* Background neutrals */
@@ -18,16 +22,33 @@
   --loreal-gray-dark: #666666;  /* Secondary text */
   --loreal-text: #1a1a1a;       /* Primary text - near black */
   
-  /* Gradient Combinations */
+  /* Signature Gradient Combinations - Unique to Your Design */
+  --gradient-hero: linear-gradient(135deg, #E30613 0%, #8B1538 50%, #000000 100%);
   --gradient-red: linear-gradient(135deg, #E30613 0%, #B50510 100%);
   --gradient-gold: linear-gradient(135deg, #D4AF37 0%, #B8941F 100%);
   --gradient-elegant: linear-gradient(135deg, #E30613 0%, #B76E79 100%);
   --gradient-sophisticated: linear-gradient(135deg, #000000 0%, #2C2C2C 100%);
+  --gradient-luxury: linear-gradient(135deg, #8B1538 0%, #000000 100%);
+  --gradient-warm: linear-gradient(135deg, #FFF8F0 0%, #F7E7CE 100%);
+  --gradient-rose: linear-gradient(135deg, #B76E79 0%, #D4AF37 100%);
   
-  /* Shadows & Depth */
+  /* Subtle Overlays for Depth */
+  --overlay-red-soft: linear-gradient(135deg, rgba(227, 6, 19, 0.03) 0%, rgba(227, 6, 19, 0.06) 100%);
+  --overlay-black-soft: linear-gradient(135deg, rgba(0, 0, 0, 0.02) 0%, rgba(0, 0, 0, 0.05) 100%);
+  --overlay-gold-shimmer: linear-gradient(135deg, rgba(212, 175, 55, 0.05) 0%, rgba(212, 175, 55, 0.1) 100%);
+  
+  /* Sophisticated Shadows - Layered Depth */
   --shadow-red: 0 4px 20px rgba(227, 6, 19, 0.15);
   --shadow-elegant: 0 8px 32px rgba(227, 6, 19, 0.2);
+  --shadow-luxury: 0 12px 48px rgba(139, 21, 56, 0.25);
   --shadow-soft: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --shadow-gold: 0 4px 20px rgba(212, 175, 55, 0.2);
+  --shadow-dramatic: 0 20px 60px rgba(0, 0, 0, 0.3);
+  
+  /* Refined Border Styles */
+  --border-elegant: 1px solid rgba(227, 6, 19, 0.2);
+  --border-gold: 1px solid rgba(212, 175, 55, 0.3);
+  --border-subtle: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 /* —— RTL Support —— */
@@ -101,46 +122,59 @@ body::after {
 /* header */
 .site-header {
   text-align: center;
-  padding: 50px 30px 40px;
-  background: var(--gradient-red);
+  padding: 80px 40px 60px;
+  background: var(--gradient-hero); /* Signature gradient: red → burgundy → black */
   position: relative;
   overflow: hidden;
+  border-bottom: 4px solid var(--loreal-black);
 }
 
-/* Elegant circular pattern overlay (L'Oréal "O" motif) */
+/* Elegant circular pattern overlay - Inspired by L'Oréal's iconic "O" */
 .site-header::before {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -10%;
-  width: 120%;
-  height: 200%;
-  background: radial-gradient(circle at 50% 50%, 
-    rgba(255, 255, 255, 0.08) 0%, 
-    rgba(255, 255, 255, 0.04) 30%, 
-    transparent 60%);
-  animation: subtleRotate 60s linear infinite;
+  top: -80%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle at center, 
+    rgba(255, 255, 255, 0.12) 0%, 
+    rgba(255, 255, 255, 0.06) 25%, 
+    rgba(212, 175, 55, 0.08) 50%,
+    transparent 70%);
+  border-radius: 50%;
+  animation: breatheGlow 8s ease-in-out infinite;
   pointer-events: none;
+  opacity: 0.7;
 }
 
-@keyframes subtleRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+@keyframes breatheGlow {
+  0%, 100% { 
+    transform: translateX(-50%) scale(1);
+    opacity: 0.7;
+  }
+  50% { 
+    transform: translateX(-50%) scale(1.1);
+    opacity: 0.9;
+  }
 }
 
-/* Sophisticated accent line */
+/* Sophisticated gold accent line - "Fragile subtlety" */
 .site-header::after {
   content: "";
   position: absolute;
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 4px;
   background: linear-gradient(90deg, 
     transparent 0%, 
+    rgba(212, 175, 55, 0.3) 20%,
     var(--loreal-gold) 50%, 
+    rgba(212, 175, 55, 0.3) 80%,
     transparent 100%);
-  opacity: 0.6;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.4);
 }
 
 /* Language Toggle Button */
@@ -217,28 +251,104 @@ body::after {
 }
 
 .site-title {
-  font-size: 26px;
-  font-weight: 300;
-  margin-bottom: 10px;
-  color: var(--loreal-white);
   position: relative;
   z-index: 1;
-  letter-spacing: 1.5px;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.2);
-  text-transform: uppercase;
-  font-family: "Montserrat", sans-serif;
+  margin-bottom: 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
 }
 
-/* Elegant accent after title */
+.title-main {
+  font-size: 56px;
+  font-weight: 800;
+  color: var(--loreal-white);
+  letter-spacing: 8px;
+  text-shadow: 
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    0 4px 12px rgba(0, 0, 0, 0.2),
+    0 0 40px rgba(212, 175, 55, 0.2); /* Subtle gold glow */
+  text-transform: uppercase;
+  font-family: "Montserrat", sans-serif;
+  position: relative;
+  padding: 0 20px;
+}
+
+/* Refined "O" accent - L'Oréal's rallying symbol */
+.title-main::before {
+  content: "○";
+  position: absolute;
+  left: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: var(--loreal-gold);
+  opacity: 0.6;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+  animation: pulseGold 3s ease-in-out infinite;
+}
+
+.title-main::after {
+  content: "○";
+  position: absolute;
+  right: -40px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 24px;
+  color: var(--loreal-gold);
+  opacity: 0.6;
+  text-shadow: 0 0 20px rgba(212, 175, 55, 0.6);
+  animation: pulseGold 3s ease-in-out infinite 1.5s; /* Offset animation */
+}
+
+@keyframes pulseGold {
+  0%, 100% { 
+    opacity: 0.6;
+    transform: translateY(-50%) scale(1);
+  }
+  50% { 
+    opacity: 0.9;
+    transform: translateY(-50%) scale(1.1);
+  }
+}
+
+.title-subtitle {
+  font-size: 13px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.95);
+  letter-spacing: 4px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  text-transform: uppercase;
+  border-top: 1px solid rgba(212, 175, 55, 0.3);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 8px 30px;
+  background: rgba(0, 0, 0, 0.15);
+  backdrop-filter: blur(10px);
+  border-radius: 50px;
+}
+
+/* Elegant dual accent lines below title */
 .site-title::after {
   content: "";
   display: block;
-  width: 60px;
-  height: 2px;
-  background: var(--loreal-gold);
-  margin: 12px auto 0;
-  border-radius: 2px;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    var(--loreal-gold) 30%,
+    var(--loreal-white) 50%,
+    var(--loreal-gold) 70%,
+    transparent 100%);
+  margin: 16px auto 0;
+  border-radius: 3px;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.5);
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
 }
 
 /* Search & Filter Section */
@@ -305,20 +415,20 @@ body::after {
 }
 
 .search-box input::placeholder {
-  color: var(--loreal-light-text);
+  color: #999;
   font-weight: 300;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .search-box input:hover {
-  border-color: var(--loreal-gold);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.15);
+  border-color: #dc2626;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.1);
 }
 
 .search-box input:focus {
   outline: none;
-  border-color: var(--loreal-red);
-  box-shadow: 0 4px 16px rgba(227, 6, 19, 0.15);
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
 }
 
 .clear-search-btn {
@@ -779,37 +889,32 @@ body::after {
 .product-rating {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 0;
-  font-size: 0.9em;
+  gap: 6px;
+  margin: 10px 0;
+  font-size: 14px;
 }
 
 .product-rating .stars {
   display: flex;
-  gap: 2px;
-  color: #FFD700; /* Gold stars */
-  font-size: 1em;
+  gap: 1px;
 }
 
 .product-rating .stars .star {
   display: inline-block;
+  color: #fbbf24;
+  font-size: 14px;
 }
 
 .product-rating .rating-number {
-  font-weight: 600;
-  color: var(--text-color);
+  font-weight: 700;
+  color: #1f2937;
+  font-size: 14px;
 }
 
 .product-rating .review-count {
-  color: var(--text-color);
-  opacity: 0.7;
-  font-size: 0.9em;
-}
-
-.product-rating .price {
-  margin-left: auto;
-  font-weight: 600;
-  color: var(--loreal-red);
+  color: #9ca3af;
+  font-size: 13px;
+  font-weight: 400;
 }
 
 /* ========================================
@@ -1014,124 +1119,195 @@ body::after {
    🎨 COLOR-CODED CATEGORY BADGES
    ======================================== */
 
+/* Category Badge - Top-left corner */
 .category-badge {
   position: absolute;
-  top: 10px;
-  left: 10px;
+  top: 12px;
+  left: 12px;
   padding: 6px 12px;
   border-radius: 20px;
-  font-size: 0.75em;
+  font-size: 10px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.5px;
   color: white;
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
   z-index: 2;
-  backdrop-filter: blur(4px);
 }
 
+/* Color-coded category badges */
 .category-cleanser {
-  background: linear-gradient(135deg, #4A90E2 0%, #357ABD 100%);
+  background: #22c55e;
 }
 
 .category-toner {
-  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+  background: #a855f7;
 }
 
-.category-serum {
-  background: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+.category-serum, .category-treatment {
+  background: #ef4444;
 }
 
 .category-moisturizer {
-  background: linear-gradient(135deg, #50C878 0%, #27AE60 100%);
-}
-
-.category-treatment {
-  background: linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%);
+  background: #3b82f6;
 }
 
 .category-sunscreen {
-  background: linear-gradient(135deg, #F39C12 0%, #E67E22 100%);
+  background: #f59e0b;
 }
 
 .category-eye-cream {
-  background: linear-gradient(135deg, #3498DB 0%, #2980B9 100%);
+  background: #8b5cf6;
 }
 
 .category-mask {
-  background: linear-gradient(135deg, #E91E63 0%, #C2185B 100%);
+  background: #ec4899;
 }
 
 .category-exfoliant {
-  background: linear-gradient(135deg, #FF9800 0%, #F57C00 100%);
+  background: #f97316;
 }
 
-/* Badge animation on hover */
-.product-card:hover .category-badge {
-  transform: scale(1.05);
-  transition: transform 0.3s ease;
+.category-haircare {
+  background: #6366f1;
 }
 
-/* Dark mode adjustments */
-[data-theme="dark"] .category-badge {
-  box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+.category-hair.color, 
+.category-hair.styling {
+  background: #6366f1;
+}
+
+.category-makeup {
+  background: #d946ef;
+}
+
+.category-mens-grooming {
+  background: #14b8a6;
+}
+
+.category-fragrance {
+  background: #f43f5e;
+}
+
+/* Favorite Heart - Top-right corner */
+.favorite-heart {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  background: white;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 3;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.favorite-heart:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.favorite-heart i {
+  font-size: 18px;
+  color: #dc2626;
+  transition: all 0.25s ease;
+}
+
+.favorite-heart.active i,
+.favorite-heart:active i {
+  animation: heart-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.favorite-heart.active i {
+  color: #dc2626;
+}
+
+@keyframes heart-pop {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.3);
+  }
+  100% {
+    transform: scale(1);
+  }
 }
 
 /* ========================================
-   ⚡ ROUTINE TEMPLATES
+   ⚡ QUICK START TEMPLATES
    ======================================== */
 
 .routine-templates {
   margin: 0 30px 20px;
-  padding: 30px;
+  padding: 35px;
   background: linear-gradient(135deg,
-    rgba(227, 6, 19, 0.03) 0%,
-    rgba(212, 175, 55, 0.03) 100%);
+    rgba(220, 38, 38, 0.02) 0%,
+    rgba(168, 85, 247, 0.02) 100%);
   border-radius: 20px;
   border: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .routine-templates h3 {
   color: var(--loreal-text);
-  font-size: 22px;
-  font-weight: 600;
+  font-size: 24px;
+  font-weight: 700;
   margin-bottom: 8px;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   letter-spacing: 0.5px;
 }
 
 .routine-templates h3 i {
-  color: var(--loreal-red);
-  font-size: 24px;
+  color: #a855f7;
+  font-size: 26px;
 }
 
 .templates-subtitle {
-  color: var(--loreal-light-text);
-  font-size: 14px;
-  margin-bottom: 20px;
+  color: #666;
+  font-size: 15px;
+  margin-bottom: 25px;
   font-weight: 400;
 }
 
 .templates-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 15px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+}
+
+/* Responsive grid */
+@media (max-width: 1024px) {
+  .templates-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .templates-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 .template-btn {
   background: var(--loreal-white);
   border: 2px solid rgba(0, 0, 0, 0.08);
   border-radius: 16px;
-  padding: 20px;
+  padding: 24px 16px;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 8px;
+  gap: 10px;
   position: relative;
   overflow: hidden;
 }
@@ -1139,53 +1315,132 @@ body::after {
 .template-btn::before {
   content: "";
   position: absolute;
-  top: -50%;
-  left: -50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle,
-    rgba(227, 6, 19, 0.1) 0%,
-    transparent 70%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
   opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.template-btn:hover::before {
-  opacity: 1;
+  transition: opacity 0.3s ease;
+  z-index: 0;
 }
 
 .template-btn:hover {
-  border-color: var(--loreal-red);
-  box-shadow: 0 8px 24px rgba(227, 6, 19, 0.15);
-  transform: translateY(-3px);
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
 .template-btn:active {
-  transform: translateY(-1px);
+  transform: scale(1.02);
+}
+
+/* Color-coded backgrounds */
+.template-btn[data-template="acne-fighting"] {
+  background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%);
+  border-color: #f87171;
+}
+
+.template-btn[data-template="anti-aging"] {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  border-color: #fbbf24;
+}
+
+.template-btn[data-template="hydration-boost"] {
+  background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #60a5fa;
+}
+
+.template-btn[data-template="minimalist"] {
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+  border-color: #9ca3af;
+}
+
+.template-btn[data-template="sensitive-skin"] {
+  background: linear-gradient(135deg, #fce7f3 0%, #fbcfe8 100%);
+  border-color: #f472b6;
+}
+
+/* Text colors matching backgrounds */
+.template-btn[data-template="acne-fighting"] .template-name,
+.template-btn[data-template="acne-fighting"] .template-desc {
+  color: #b91c1c;
+}
+
+.template-btn[data-template="anti-aging"] .template-name,
+.template-btn[data-template="anti-aging"] .template-desc {
+  color: #d97706;
+}
+
+.template-btn[data-template="hydration-boost"] .template-name,
+.template-btn[data-template="hydration-boost"] .template-desc {
+  color: #1d4ed8;
+}
+
+.template-btn[data-template="minimalist"] .template-name,
+.template-btn[data-template="minimalist"] .template-desc {
+  color: #374151;
+}
+
+.template-btn[data-template="sensitive-skin"] .template-name,
+.template-btn[data-template="sensitive-skin"] .template-desc {
+  color: #be185d;
 }
 
 .template-btn i {
-  font-size: 32px;
-  color: var(--loreal-red);
-  margin-bottom: 5px;
+  width: 60px;
+  height: 60px;
+  font-size: 28px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
   transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+/* Icon colors based on template type */
+.template-btn[data-template="acne-fighting"] i {
+  color: #dc2626;
+}
+
+.template-btn[data-template="anti-aging"] i {
+  color: #f59e0b;
+}
+
+.template-btn[data-template="hydration-boost"] i {
+  color: #3b82f6;
+}
+
+.template-btn[data-template="minimalist"] i {
+  color: #6b7280;
+}
+
+.template-btn[data-template="sensitive-skin"] i {
+  color: #ec4899;
 }
 
 .template-btn:hover i {
-  transform: scale(1.1) rotate(5deg);
+  transform: scale(1.1);
 }
 
 .template-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--loreal-text);
+  font-size: 15px;
+  font-weight: 700;
   letter-spacing: 0.3px;
+  position: relative;
+  z-index: 1;
 }
 
 .template-desc {
-  font-size: 13px;
-  color: var(--loreal-light-text);
+  font-size: 12px;
   font-weight: 400;
+  opacity: 0.9;
+  position: relative;
+  z-index: 1;
 }
 
 .template-btn.applied {
@@ -1227,164 +1482,412 @@ body::after {
 }
 
 /* products grid */
+.products-section {
+  background: linear-gradient(to bottom, 
+    #ffffff 0%, 
+    #f9fafb 100%);
+}
+
+.products-header {
+  padding: 25px 30px 0;
+  background: white;
+}
+
+.products-count {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  padding-bottom: 20px;
+}
+
 .products-grid {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
   margin: 0;
-  padding: 40px 30px;
-  background: linear-gradient(to bottom, 
-    var(--loreal-white) 0%, 
-    rgba(248, 248, 248, 1) 100%);
+  padding: 20px 30px 40px;
+}
+
+/* Responsive Grid Breakpoints */
+@media (max-width: 1024px) {
+  .products-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 30px 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .products-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 20px 15px;
+  }
+  
+  .products-header {
+    padding: 20px 15px 0;
+  }
+  
+  .products-count {
+    font-size: 16px;
+  }
+}
+
+/* Empty State */
+.empty-state {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  text-align: center;
+}
+
+.empty-state-icon {
+  font-size: 80px;
+  color: #d1d5db;
+  margin-bottom: 24px;
+}
+
+.empty-state-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 12px;
+}
+
+.empty-state-message {
+  font-size: 16px;
+  color: #6b7280;
+  margin-bottom: 28px;
+  max-width: 500px;
+}
+
+.empty-state-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 24px;
+  background: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.empty-state-btn:hover {
+  background: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
+}
+
+.empty-state-btn i {
+  font-size: 16px;
 }
 
 .product-card {
-  flex: 0 1 calc(33.333% - 16px);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  padding: 20px;
-  border-radius: 16px;
-  display: flex;
-  gap: 16px;
-  min-height: 170px;
+  border: 1px solid rgba(227, 6, 19, 0.08);
+  border-radius: 20px;
   cursor: pointer;
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   background: var(--loreal-white);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 
+    0 2px 8px rgba(0, 0, 0, 0.04),
+    0 0 1px rgba(227, 6, 19, 0.05);
+  display: flex;
+  flex-direction: column;
 }
 
-/* Circular motif in corner */
+/* Subtle gold shimmer accent on card edge */
 .product-card::before {
   content: "";
   position: absolute;
-  top: -30px;
-  right: -30px;
-  width: 80px;
-  height: 80px;
-  border-radius: 50%;
-  background: radial-gradient(circle, 
-    rgba(227, 6, 19, 0.03) 0%, 
-    transparent 70%);
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(212, 175, 55, 0.2) 30%,
+    rgba(212, 175, 55, 0.5) 50%,
+    rgba(212, 175, 55, 0.2) 70%,
+    transparent 100%);
   opacity: 0;
-  transition: opacity 0.35s ease;
-}
-
-.product-card:hover {
-  border-color: var(--loreal-gold);
-  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.15);
-  transform: translateY(-4px);
+  transition: opacity 0.4s ease;
 }
 
 .product-card:hover::before {
   opacity: 1;
 }
 
-.product-card.selected {
-  border: 2px solid var(--loreal-red);
+.product-image-area {
   background: linear-gradient(135deg, 
-    rgba(227, 6, 19, 0.02) 0%, 
-    rgba(212, 175, 55, 0.02) 100%);
-  box-shadow: 0 8px 28px rgba(227, 6, 19, 0.12);
-}
-
-.product-card.selected::before {
-  opacity: 1;
-  background: radial-gradient(circle, 
-    rgba(227, 6, 19, 0.08) 0%, 
-    transparent 70%);
-}
-
-/* Add checkmark indicator for selected products */
-.product-card.selected::after {
-  content: "✓";
-  position: absolute;
-  top: 14px;
-  right: 60px; /* Move left to avoid favorite heart */
-  background: linear-gradient(135deg, var(--loreal-red) 0%, #B8050F 100%);
-  color: var(--loreal-white);
-  width: 30px;
-  height: 30px;
-  border-radius: 50%;
+    rgba(255, 248, 240, 1) 0%,
+    rgba(247, 231, 206, 0.3) 100%);
+  padding: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: bold;
-  font-size: 16px;
-  box-shadow: 0 3px 10px rgba(227, 6, 19, 0.35);
-  animation: checkmark-pop 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  min-height: 220px;
+  border-bottom: 1px solid rgba(227, 6, 19, 0.05);
 }
 
-@keyframes checkmark-pop {
-  0% {
-    transform: scale(0) rotate(-180deg);
-  }
-  50% {
-    transform: scale(1.2) rotate(10deg);
-  }
-  100% {
-    transform: scale(1) rotate(0deg);
-  }
+/* Elegant circular backdrop for product image */
+.product-image-area::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 180px;
+  height: 180px;
+  background: radial-gradient(circle,
+    rgba(227, 6, 19, 0.03) 0%,
+    rgba(212, 175, 55, 0.05) 50%,
+    transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: all 0.4s ease;
+}
+
+.product-card:hover .product-image-area::after {
+  transform: translate(-50%, -50%) scale(1.1);
+  background: radial-gradient(circle,
+    rgba(227, 6, 19, 0.05) 0%,
+    rgba(212, 175, 55, 0.08) 50%,
+    transparent 70%);
+}
+
+.product-image-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 170px;
+  position: relative;
+  z-index: 1;
 }
 
 .product-card img {
-  width: 110px;
-  height: 110px;
+  max-width: 150px;
+  max-height: 150px;
   object-fit: contain;
-  flex-shrink: 0;
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.08));
 }
 
-.product-card .product-info {
+.product-card:hover img {
+  transform: scale(1.08) translateY(-4px);
+}
+
+.product-content {
+  padding: 24px;
+  background: white;
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  min-height: 110px;
-  padding-right: 50px; /* Add padding to avoid favorite heart overlap */
 }
 
 .product-card h3 {
   font-size: 16px;
   margin-bottom: 8px;
-  color: var(--loreal-dark);
-  font-weight: 600;
-  line-height: 1.3;
-  padding-right: 5px; /* Extra padding for safety */
+  color: var(--loreal-black);
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.3px;
 }
 
-.product-card p {
-  font-size: 14px;
-  color: var(--loreal-light-text);
+.product-brand {
+  font-size: 13px;
+  color: var(--loreal-gray-dark);
   font-weight: 500;
-  margin-bottom: 10px;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-size: 11px;
 }
 
-.info-btn {
-  display: inline-flex;
+.product-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 
+    0 16px 32px rgba(227, 6, 19, 0.12),
+    0 0 2px rgba(212, 175, 55, 0.3);
+  border-color: rgba(227, 6, 19, 0.2);
+}
+
+.product-card.selected {
+  border: 3px solid var(--loreal-red);
+  background: linear-gradient(to bottom, 
+    rgba(227, 6, 19, 0.02), 
+    rgba(255, 255, 255, 1));
+  box-shadow: 
+    0 12px 40px rgba(227, 6, 19, 0.25),
+    0 0 0 1px rgba(212, 175, 55, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  transform: translateY(-4px);
+}
+
+/* Refined checkmark with gold accent ring */
+.product-card.selected::after {
+  content: "✓";
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: linear-gradient(135deg, var(--loreal-red) 0%, #B50510 100%);
+  color: white;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 12px;
-  background: transparent;
-  border: 1px solid var(--loreal-border);
-  border-radius: 20px;
-  color: var(--loreal-light-text);
-  font-size: 12px;
-  font-weight: 500;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 16px;
+  box-shadow: 
+    0 4px 12px rgba(227, 6, 19, 0.4),
+    0 0 0 2px white,
+    0 0 0 4px rgba(212, 175, 55, 0.4);
+  z-index: 10;
+  animation: checkmark-elegant 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.5);
+}
+
+@keyframes checkmark-elegant {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.15) rotate(10deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Details Button - Full width at bottom of card */
+.details-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  background: #374151;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   margin-top: auto;
 }
 
-.info-btn:hover {
-  background: linear-gradient(135deg, var(--loreal-red) 0%, var(--loreal-gold) 100%);
-  color: var(--loreal-white);
-  border-color: transparent;
+.details-btn:hover {
+  background: #dc2626;
   transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(255, 0, 59, 0.3);
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.3);
 }
 
-.info-btn i {
+.details-btn i {
+  font-size: 14px;
+}
+
+/* Product Description Tooltip - Appears on hover */
+.product-description-tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-10px);
+  background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+  color: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  max-width: 280px;
+  width: max-content;
+  z-index: 100;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  pointer-events: none;
   font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 10px;
+}
+
+.product-description-tooltip strong {
+  display: block;
+  color: #fbbf24;
+  margin-bottom: 8px;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.product-description-tooltip p {
+  margin: 0 0 10px 0;
+  color: #e5e7eb;
+}
+
+.product-description-tooltip small {
+  display: block;
+  color: #9ca3af;
+  font-size: 11px;
+  font-style: italic;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.product-description-tooltip small i {
+  margin-right: 4px;
+  color: #60a5fa;
+}
+
+/* Tooltip Arrow */
+.tooltip-arrow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 8px solid transparent;
+  border-right: 8px solid transparent;
+  border-top: 8px solid #374151;
+}
+
+/* Show tooltip on card hover */
+.product-card:hover .product-description-tooltip {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* Hide tooltip when hovering over buttons to avoid interference */
+.product-card:hover .details-btn:hover ~ .product-description-tooltip,
+.product-card:hover .favorite-heart:hover ~ .product-description-tooltip {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* Responsive tooltip */
+@media (max-width: 768px) {
+  .product-description-tooltip {
+    max-width: 240px;
+    font-size: 12px;
+    padding: 12px;
+  }
 }
 
 /* selected products */
@@ -1966,6 +2469,30 @@ body::after {
   border-color: var(--loreal-gold);
 }
 
+/* Dark mode tooltip styling */
+.dark-mode .product-description-tooltip {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.dark-mode .tooltip-arrow {
+  border-top-color: #1e293b;
+}
+
+.dark-mode .product-description-tooltip strong {
+  color: #fbbf24;
+}
+
+.dark-mode .product-description-tooltip p {
+  color: #f3f4f6;
+}
+
+.dark-mode .product-description-tooltip small {
+  color: #9ca3af;
+  border-top-color: rgba(255, 255, 255, 0.1);
+}
+
 .dark-mode .chat-window {
   background: #1a1a1a;
 }
@@ -2034,22 +2561,22 @@ body::after {
 }
 
 /* ========================================
-   ✨ HEADER ACTION BUTTONS
+   ✨ HEADER ACTION BUTTONS (Pill-style Navigation Tabs)
    ======================================== */
 
 .header-actions {
   display: flex;
   gap: 12px;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 25px;
   flex-wrap: wrap;
 }
 
 .header-action-btn {
-  background: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.2);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(255, 255, 255, 0.28);
+  border: 2px solid transparent;
   border-radius: 50px;
   padding: 12px 24px;
   color: white;
@@ -2059,27 +2586,41 @@ body::after {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.3s ease;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
 }
 
+/* Inactive tab hover state */
 .header-action-btn:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.3);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Active tab state */
+.header-action-btn.active {
+  background: white;
+  color: #dc2626;
+  border-color: white;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+}
+
+.header-action-btn.active:hover {
+  background: #fef2f2;
+  transform: translateY(-2px);
+}
+
 .header-action-btn i {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .header-action-btn .badge {
   background: var(--loreal-gold);
   color: var(--loreal-dark);
   border-radius: 50%;
-  width: 20px;
+  min-width: 20px;
   height: 20px;
+  padding: 0 5px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2088,12 +2629,62 @@ body::after {
   position: absolute;
   top: -5px;
   right: -5px;
-  animation: pulse 2s infinite;
+  animation: pulse-badge 2s infinite;
 }
 
-@keyframes pulse {
+.header-action-btn.active .badge {
+  background: #dc2626;
+  color: white;
+}
+
+@keyframes pulse-badge {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.1); }
+}
+
+/* Responsive header tabs for mobile */
+@media (max-width: 768px) {
+  .header-actions {
+    overflow-x: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 5px;
+  }
+  
+  .header-action-btn {
+    flex-shrink: 0;
+    padding: 10px 18px;
+    font-size: 13px;
+  }
+  
+  .header-action-btn i {
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .site-header {
+    padding: 40px 20px 35px;
+  }
+  
+  .title-main {
+    font-size: 36px;
+  }
+  
+  .title-subtitle {
+    font-size: 13px;
+  }
+  
+  .header-action-btn span {
+    display: none;
+  }
+  
+  .header-action-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
 }
 
 /* ========================================
@@ -3588,25 +4179,26 @@ body.dark-mode .selected-product-chip.dragging {
 }
 
 /* ========================================
-   🔍 NATURAL LANGUAGE SEARCH
+   🔍 SMART SEARCH BANNER
    ======================================== */
 
 .nl-search-hint {
-  background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);
+  background: linear-gradient(135deg, #a855f7 0%, #9333ea 100%);
   color: white;
-  padding: 12px 20px;
-  border-radius: 10px;
-  margin-top: 15px;
+  padding: 14px 22px;
+  border-radius: 12px;
+  margin-top: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 14px;
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+  font-weight: 500;
+  box-shadow: 0 4px 15px rgba(168, 85, 247, 0.25);
   animation: slideInFromTop 0.5s ease-out;
 }
 
 .nl-search-hint i {
-  font-size: 18px;
+  font-size: 20px;
   animation: sparkle 2s ease-in-out infinite;
 }
 

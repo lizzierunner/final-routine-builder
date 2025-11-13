@@ -59,6 +59,36 @@ function loadSelectedProductsFromStorage() {
   }
 }
 
+/* Save conversation history to localStorage */
+function saveConversationToStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY_CONVERSATION, JSON.stringify(conversationHistory));
+    console.log(`Saved ${conversationHistory.length / 2} conversation exchange(s) to localStorage`);
+  } catch (error) {
+    console.error("Error saving conversation to localStorage:", error);
+  }
+}
+
+/* Load conversation history from localStorage */
+function loadConversationFromStorage() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_CONVERSATION);
+    if (saved) {
+      conversationHistory = JSON.parse(saved);
+      console.log(`Loaded ${conversationHistory.length / 2} conversation exchange(s) from localStorage`);
+      
+      /* Restore conversation messages to chat window */
+      conversationHistory.forEach((message) => {
+        const isUser = message.role === "user";
+        addMessage(message.content, isUser);
+      });
+    }
+  } catch (error) {
+    console.error("Error loading conversation from localStorage:", error);
+    conversationHistory = [];
+  }
+}
+
 /* Clear all selected products */
 function clearAllProducts() {
   selectedProducts = [];
@@ -84,15 +114,28 @@ async function loadProducts() {
 
 /* Create HTML for displaying product cards */
 function displayProducts(products) {
+  /* Update product count */
+  const countElement = document.getElementById('productsCount');
+  if (countElement) {
+    countElement.textContent = `${products.length} Product${products.length !== 1 ? 's' : ''}`;
+  }
+  
   productsContainer.innerHTML = products
     .map(
       (product) => `
     <div class="product-card" data-product-id="${product.id}">
-      <span class="category-badge category-${product.category}">${product.category}</span>
-      <img src="${product.image}" alt="${product.name}">
-      <div class="product-info">
+      <div class="product-image-area">
+        <span class="category-badge category-${product.category}">${product.category}</span>
+        <button class="favorite-heart" onclick="toggleFavorite(${product.id}); event.stopPropagation();" aria-label="Add to favorites">
+          <i class="fa-regular fa-heart"></i>
+        </button>
+        <div class="product-image-wrapper">
+          <img src="${product.image}" alt="${product.name}">
+        </div>
+      </div>
+      <div class="product-content">
         <h3>${product.name}</h3>
-        <p>${product.brand}</p>
+        <p class="product-brand">${product.brand}</p>
         ${product.rating ? `
         <div class="product-rating">
           <span class="stars">
@@ -100,13 +143,20 @@ function displayProducts(products) {
           </span>
           <span class="rating-number">${product.rating}</span>
           ${product.reviewCount ? `<span class="review-count">(${product.reviewCount.toLocaleString()})</span>` : ''}
-          ${product.price ? `<span class="price">$${product.price}</span>` : ''}
         </div>
         ` : ''}
-        <button class="info-btn" onclick="showProductDetails(${product.id})" aria-label="View details for ${product.name}">
+        <button class="details-btn" onclick="showProductDetails(${product.id}); event.stopPropagation();" aria-label="View details for ${product.name}">
           <i class="fa-solid fa-info-circle"></i> Details
         </button>
       </div>
+      ${product.description ? `
+      <div class="product-description-tooltip" role="tooltip">
+        <div class="tooltip-arrow"></div>
+        <strong>Quick Info:</strong>
+        <p>${product.description.substring(0, 150)}${product.description.length > 150 ? '...' : ''}</p>
+        <small><i class="fa-solid fa-info-circle"></i> Click "Details" for more info</small>
+      </div>
+      ` : ''}
     </div>
   `
     )
@@ -116,8 +166,8 @@ function displayProducts(products) {
   const productCards = document.querySelectorAll(".product-card");
   productCards.forEach((card) => {
     card.addEventListener("click", (e) => {
-      /* Don't toggle selection if clicking the info button */
-      if (!e.target.closest('.info-btn')) {
+      /* Don't toggle selection if clicking the info button or favorite button */
+      if (!e.target.closest('.details-btn') && !e.target.closest('.favorite-heart')) {
         toggleProductSelection(card);
       }
     });
@@ -125,6 +175,9 @@ function displayProducts(products) {
 
   /* Re-apply selected state to cards that are already selected */
   updateProductCardStates();
+  
+  /* Update favorite button states */
+  updateFavoriteButtons();
 }
 
 /* Generate star rating display */
@@ -336,8 +389,53 @@ function filterProducts() {
   /* Update search info */
   updateSearchInfo(filteredProducts.length, searchTerm, category);
   
-  /* Display the filtered products */
-  displayProducts(filteredProducts);
+  /* Display the filtered products or empty state */
+  if (filteredProducts.length === 0 && (searchTerm || category)) {
+    displayEmptyState(searchTerm, category);
+  } else {
+    displayProducts(filteredProducts);
+  }
+}
+
+/* Display empty state when no products match */
+function displayEmptyState(searchTerm, category) {
+  /* Update count */
+  const countElement = document.getElementById('productsCount');
+  if (countElement) {
+    countElement.textContent = '0 Products';
+  }
+  
+  let message = 'No products found';
+  if (searchTerm && category) {
+    message = `No products found matching "<strong>${searchTerm}</strong>" in ${getCategoryName(category)}`;
+  } else if (searchTerm) {
+    message = `No products found matching "<strong>${searchTerm}</strong>"`;
+  } else if (category) {
+    message = `No products found in ${getCategoryName(category)}`;
+  }
+  
+  productsContainer.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-state-icon">
+        <i class="fa-solid fa-box-open"></i>
+      </div>
+      <h3 class="empty-state-title">No Products Found</h3>
+      <p class="empty-state-message">${message}</p>
+      <button class="empty-state-btn" onclick="resetFilters()">
+        <i class="fa-solid fa-rotate-right"></i> Reset Filters
+      </button>
+    </div>
+  `;
+}
+
+/* Reset all filters */
+function resetFilters() {
+  productSearch.value = '';
+  categoryFilter.value = '';
+  currentSearchTerm = '';
+  currentCategory = '';
+  clearSearchBtn.classList.remove('visible');
+  filterProducts();
 }
 
 /* Update search info message */
@@ -442,10 +540,23 @@ function addMessage(text, isUser = false, searchResults = null) {
 }
 
 /* Show loading indicator in chat */
-function showLoading() {
+function showLoading(hasContext = false) {
   const loadingDiv = document.createElement("div");
   loadingDiv.className = "message loading";
-  loadingDiv.textContent = "Thinking...";
+  
+  /* Show different loading message based on context */
+  if (hasContext && conversationHistory.length > 0) {
+    const exchangeCount = conversationHistory.length / 2;
+    loadingDiv.innerHTML = `
+      <span>Thinking...</span>
+      <small style="display: block; margin-top: 5px; opacity: 0.7; font-size: 0.85em;">
+        📚 Remembering ${exchangeCount} previous ${exchangeCount === 1 ? 'exchange' : 'exchanges'}
+      </small>
+    `;
+  } else {
+    loadingDiv.textContent = "Thinking...";
+  }
+  
   loadingDiv.id = "loading-message";
   chatWindow.appendChild(loadingDiv);
   chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -519,6 +630,9 @@ async function sendToOpenAI(userMessage, includeProducts = false, enableWebSearc
     
     console.log(`Conversation history now has ${conversationHistory.length / 2} exchanges`);
     
+    /* Save conversation history to localStorage for persistence */
+    saveConversationToStorage();
+    
     /* Return both the response and any search results */
     return {
       response: aiResponse,
@@ -562,7 +676,7 @@ Format the response as a clear, numbered step-by-step routine I can follow daily
   );
   
   /* Show loading indicator while waiting for API response */
-  showLoading();
+  showLoading(true);
 
   try {
     /* Send request to OpenAI with selected products context
@@ -615,8 +729,8 @@ chatForm.addEventListener("submit", async (e) => {
   /* Clear input field */
   userInput.value = "";
 
-  /* Show loading indicator */
-  showLoading();
+  /* Show loading indicator with context info if we have conversation history */
+  showLoading(true);
 
   try {
     /* Send message to OpenAI with product context if products are selected
@@ -664,6 +778,9 @@ function clearChat() {
   /* Reset conversation history array */
   conversationHistory = [];
   
+  /* Clear from localStorage */
+  localStorage.removeItem(STORAGE_KEY_CONVERSATION);
+  
   /* Clear chat window */
   chatWindow.innerHTML = "";
   
@@ -675,7 +792,7 @@ function clearChat() {
   confirmDiv.textContent = "Chat cleared. Start a new conversation!";
   chatWindow.appendChild(confirmDiv);
   
-  console.log("Conversation history cleared");
+  console.log("Conversation history cleared from memory and localStorage");
 }
 
 /* Clear chat button click handler */
@@ -801,6 +918,9 @@ async function initializeApp() {
   
   /* Display selected products (will show empty state or loaded products) */
   displaySelectedProducts();
+  
+  /* Load conversation history from localStorage */
+  loadConversationFromStorage();
   
   /* Load language direction preference */
   loadLanguagePreference();
