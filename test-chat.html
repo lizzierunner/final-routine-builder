@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        h1 {
+            color: #E30613;
+            margin-bottom: 20px;
+        }
+        button {
+            background: linear-gradient(135deg, #E30613, #B50610);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: transform 0.2s;
+        }
+        button:hover {
+            transform: scale(1.05);
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 100px;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .loading {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+        }
+        .info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+        code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+        .debug {
+            margin-top: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-left: 4px solid #6c757d;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Chat API Diagnostic Test</h1>
+        <p>This tool tests the chat functionality to help diagnose any API issues.</p>
+        
+        <div>
+            <button onclick="testBasicChat()">Test Basic Chat</button>
+            <button onclick="testOilySkinQuestion()">Test "Oily Skin" Question</button>
+            <button onclick="testWithWebSearch()">Test With Web Search</button>
+            <button onclick="clearOutput()">Clear Output</button>
+        </div>
+        
+        <div id="output" class="info">
+            Click a button above to start testing...<br><br>
+            <strong>Instructions:</strong><br>
+            1. Open browser console (F12) to see detailed logs<br>
+            2. Click any test button above<br>
+            3. Check the results below and in the console
+        </div>
+        
+        <div id="debug" class="debug" style="display:none;"></div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://loreal-routine-builder.esjohn15.workers.dev/";
+        
+        function showOutput(message, type = 'info') {
+            const output = document.getElementById('output');
+            output.className = type;
+            output.textContent = message;
+        }
+        
+        function showDebug(data) {
+            const debug = document.getElementById('debug');
+            debug.style.display = 'block';
+            debug.textContent = 'Debug Info:\n' + JSON.stringify(data, null, 2);
+        }
+        
+        function clearOutput() {
+            const output = document.getElementById('output');
+            output.className = 'info';
+            output.textContent = 'Output cleared. Click a test button to start...';
+            document.getElementById('debug').style.display = 'none';
+        }
+        
+        async function testBasicChat() {
+            showOutput('⏳ Testing basic chat...', 'loading');
+            console.log('=== TEST 1: Basic Chat ===');
+            
+            try {
+                const payload = {
+                    model: "gpt-4o",
+                    messages: [
+                        { role: "system", content: "You are a helpful beauty assistant." },
+                        { role: "user", content: "Hello! Can you help me?" }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 500
+                };
+                
+                console.log('Request payload:', payload);
+                
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    showOutput(`❌ ERROR (${response.status}):\n${errorText}`, 'error');
+                    showDebug({ status: response.status, error: errorText });
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const aiResponse = data.choices[0].message.content;
+                    showOutput(`✅ SUCCESS!\n\nAI Response:\n${aiResponse}`, 'success');
+                    showDebug(data);
+                } else {
+                    showOutput(`❌ ERROR: Invalid response format\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                    showDebug(data);
+                }
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                showOutput(`❌ ERROR:\n${error.message}\n\nFull error: ${error}`, 'error');
+                showDebug({ error: error.toString(), stack: error.stack });
+            }
+        }
+        
+        async function testOilySkinQuestion() {
+            showOutput('⏳ Testing "oily skin" question...', 'loading');
+            console.log('=== TEST 2: Oily Skin Question ===');
+            
+            try {
+                const payload = {
+                    model: "gpt-4o",
+                    messages: [
+                        { role: "system", content: "You are a helpful L'Oréal beauty assistant. You help customers understand products and answer questions about skincare." },
+                        { role: "user", content: "What products should I use for my oily skin?" }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 1000,
+                    enableWebSearch: false
+                };
+                
+                console.log('Request payload:', payload);
+                
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    showOutput(`❌ ERROR (${response.status}):\n${errorText}`, 'error');
+                    showDebug({ status: response.status, error: errorText });
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const aiResponse = data.choices[0].message.content;
+                    showOutput(`✅ SUCCESS!\n\nAI Response (first 500 chars):\n${aiResponse.substring(0, 500)}...`, 'success');
+                    showDebug(data);
+                } else {
+                    showOutput(`❌ ERROR: Invalid response format\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                    showDebug(data);
+                }
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                showOutput(`❌ ERROR:\n${error.message}\n\nFull error: ${error}`, 'error');
+                showDebug({ error: error.toString(), stack: error.stack });
+            }
+        }
+        
+        async function testWithWebSearch() {
+            showOutput('⏳ Testing with web search enabled...', 'loading');
+            console.log('=== TEST 3: Web Search Enabled ===');
+            
+            try {
+                const payload = {
+                    model: "gpt-4o",
+                    messages: [
+                        { role: "system", content: "You are a helpful beauty assistant." },
+                        { role: "user", content: "What are the trending skincare products in 2025?" }
+                    ],
+                    temperature: 0.7,
+                    max_tokens: 1000,
+                    enableWebSearch: true  // This should use Mistral with web search
+                };
+                
+                console.log('Request payload:', payload);
+                
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(payload),
+                });
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    showOutput(`❌ ERROR (${response.status}):\n${errorText}`, 'error');
+                    showDebug({ status: response.status, error: errorText });
+                    return;
+                }
+                
+                const data = await response.json();
+                console.log('Response data:', data);
+                
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const aiResponse = data.choices[0].message.content;
+                    showOutput(`✅ SUCCESS!\n\nAI Response (first 500 chars):\n${aiResponse.substring(0, 500)}...\n\nSearch Results: ${data.searchResults ? 'Yes ✓' : 'No'}`, 'success');
+                    showDebug(data);
+                } else {
+                    showOutput(`❌ ERROR: Invalid response format\n\n${JSON.stringify(data, null, 2)}`, 'error');
+                    showDebug(data);
+                }
+                
+            } catch (error) {
+                console.error('Test failed:', error);
+                showOutput(`❌ ERROR:\n${error.message}\n\nFull error: ${error}`, 'error');
+                showDebug({ error: error.toString(), stack: error.stack });
+            }
+        }
+    </script>
+</body>
+</html>

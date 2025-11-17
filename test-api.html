@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API Test - L'Oréal Routine Builder</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+    }
+    h1 {
+      color: #E30613;
+      margin-bottom: 20px;
+    }
+    button {
+      background: #E30613;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      margin: 10px 5px;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background: #c00511;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(227, 6, 19, 0.3);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    #result {
+      margin-top: 20px;
+      padding: 20px;
+      background: #f8f9fa;
+      border-radius: 8px;
+      border-left: 4px solid #E30613;
+      white-space: pre-wrap;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .success {
+      border-left-color: #28a745;
+      background: #d4edda;
+      color: #155724;
+    }
+    .error {
+      border-left-color: #dc3545;
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .loading {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #E30613;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .info {
+      background: #e7f3ff;
+      border-left: 4px solid #2196F3;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .info strong {
+      color: #2196F3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 API Connection Test</h1>
+    
+    <div class="info">
+      <strong>Worker URL:</strong> https://loreal-routine-builder.esjohn15.workers.dev/
+    </div>
+
+    <button onclick="testBasicConnection()">1. Test Basic Connection</button>
+    <button onclick="testRoutineGeneration()">2. Test Routine Generation</button>
+    <button onclick="testWebSearch()">3. Test Web Search (Mistral)</button>
+    <button onclick="clearResults()">Clear Results</button>
+
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const WORKER_URL = "https://loreal-routine-builder.esjohn15.workers.dev/";
+    const resultDiv = document.getElementById('result');
+
+    function showLoading() {
+      resultDiv.innerHTML = '<div class="loading"><div class="spinner"></div><p>Testing connection...</p></div>';
+      resultDiv.className = '';
+    }
+
+    function showResult(message, isSuccess) {
+      resultDiv.innerHTML = message;
+      resultDiv.className = isSuccess ? 'success' : 'error';
+    }
+
+    function clearResults() {
+      resultDiv.innerHTML = '';
+      resultDiv.className = '';
+    }
+
+    async function testBasicConnection() {
+      showLoading();
+      
+      try {
+        console.log('Testing basic connection to:', WORKER_URL);
+        
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a helpful assistant.'
+              },
+              {
+                role: 'user',
+                content: 'Say "API is working!" in one sentence.'
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 50
+          })
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          showResult(`✅ SUCCESS!\n\nStatus: ${response.status}\n\nAI Response:\n"${data.choices[0].message.content}"\n\nModel: ${data.model}\nTokens Used: ${data.usage.total_tokens}`, true);
+        } else if (data.error) {
+          showResult(`❌ ERROR\n\nStatus: ${response.status}\n\nError Message:\n${data.error.message || JSON.stringify(data.error)}\n\nFull Response:\n${JSON.stringify(data, null, 2)}`, false);
+        } else {
+          showResult(`❌ UNEXPECTED RESPONSE\n\nStatus: ${response.status}\n\nData:\n${JSON.stringify(data, null, 2)}`, false);
+        }
+      } catch (error) {
+        console.error('Test failed:', error);
+        showResult(`❌ CONNECTION ERROR\n\nError: ${error.message}\n\nStack:\n${error.stack}`, false);
+      }
+    }
+
+    async function testRoutineGeneration() {
+      showLoading();
+      
+      try {
+        console.log('Testing routine generation...');
+        
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a beauty advisor for L\'Oréal. The customer has selected: CeraVe Hydrating Cleanser, CeraVe Moisturizing Cream'
+              },
+              {
+                role: 'user',
+                content: 'Create a simple morning routine using these 2 products.'
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 500,
+            enableWebSearch: false
+          })
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          const routine = data.choices[0].message.content;
+          showResult(`✅ ROUTINE GENERATED!\n\nStatus: ${response.status}\n\nRoutine:\n${routine}\n\nTokens: ${data.usage.total_tokens}`, true);
+        } else if (data.error) {
+          showResult(`❌ ERROR\n\nStatus: ${response.status}\n\nError:\n${data.error.message || JSON.stringify(data.error)}`, false);
+        } else {
+          showResult(`❌ UNEXPECTED RESPONSE\n\n${JSON.stringify(data, null, 2)}`, false);
+        }
+      } catch (error) {
+        console.error('Test failed:', error);
+        showResult(`❌ ERROR\n\n${error.message}\n\n${error.stack}`, false);
+      }
+    }
+
+    async function testWebSearch() {
+      showLoading();
+      
+      try {
+        console.log('Testing Mistral web search...');
+        
+        const response = await fetch(WORKER_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'mistral-large-latest',
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a beauty advisor with access to current web information.'
+              },
+              {
+                role: 'user',
+                content: 'What are the current trending skincare ingredients in 2025?'
+              }
+            ],
+            temperature: 0.7,
+            max_tokens: 500,
+            enableWebSearch: true
+          })
+        });
+
+        console.log('Response status:', response.status);
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+          const answer = data.choices[0].message.content;
+          const citations = data.searchResults ? '\n\nCitations Found: Yes ✓' : '\n\nCitations Found: No';
+          showResult(`✅ WEB SEARCH WORKED!\n\nStatus: ${response.status}\n\nResponse:\n${answer}${citations}`, true);
+        } else if (data.error) {
+          showResult(`❌ ERROR\n\nStatus: ${response.status}\n\nError:\n${data.error.message || JSON.stringify(data.error)}`, false);
+        } else {
+          showResult(`❌ UNEXPECTED RESPONSE\n\n${JSON.stringify(data, null, 2)}`, false);
+        }
+      } catch (error) {
+        console.error('Test failed:', error);
+        showResult(`❌ ERROR\n\n${error.message}\n\n${error.stack}`, false);
+      }
+    }
+
+    // Auto-run basic test on page load
+    window.addEventListener('load', () => {
+      console.log('Page loaded. Ready to test API connection.');
+      console.log('Worker URL:', WORKER_URL);
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Debug Console</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 {
+            color: #E30613;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #E30613;
+        }
+        .test-section h2 {
+            color: #333;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        button {
+            background: linear-gradient(135deg, #E30613, #B50610);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(227, 6, 19, 0.3);
+        }
+        button:active {
+            transform: translateY(0);
+        }
+        .output {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .output.success {
+            background: #d4edda;
+            border: 2px solid #28a745;
+            color: #155724;
+        }
+        .output.error {
+            background: #f8d7da;
+            border: 2px solid #dc3545;
+            color: #721c24;
+        }
+        .output.info {
+            background: #d1ecf1;
+            border: 2px solid #17a2b8;
+            color: #0c5460;
+        }
+        .output.loading {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            color: #856404;
+        }
+        .console-log {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.8;
+        }
+        .console-log .log {
+            color: #4EC9B0;
+        }
+        .console-log .error {
+            color: #F48771;
+        }
+        .console-log .warn {
+            color: #DCDCAA;
+        }
+        .console-log .timestamp {
+            color: #858585;
+            margin-right: 10px;
+        }
+        .instructions {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #0066cc;
+        }
+        .instructions h3 {
+            color: #0066cc;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .instructions ol {
+            margin-left: 20px;
+            color: #333;
+        }
+        .instructions li {
+            margin: 5px 0;
+        }
+        .clear-btn {
+            background: linear-gradient(135deg, #6c757d, #495057);
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Real-Time Error Debugger</h1>
+        <p class="subtitle">This tool helps you see EXACTLY what's causing the error</p>
+
+        <div class="instructions">
+            <h3>📋 Instructions:</h3>
+            <ol>
+                <li>Press F12 to open browser console (IMPORTANT!)</li>
+                <li>Click "Test Oily Skin Question" below</li>
+                <li>Watch BOTH this page AND the browser console</li>
+                <li>Look for the detailed error logs</li>
+                <li>Copy any error messages you see</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Test the Exact Question</h2>
+            <p style="margin-bottom: 15px; color: #666;">This simulates asking: "what products should I use for my oily skin?"</p>
+            <button onclick="testOilySkinQuestion()">Test Oily Skin Question</button>
+            <button class="clear-btn" onclick="clearAll()">Clear Output</button>
+            <div id="output1" class="output info">Click the button above to start testing...</div>
+        </div>
+
+        <div class="test-section">
+            <h2>📺 Console Logs</h2>
+            <p style="margin-bottom: 15px; color: #666;">Real-time logs from the test (also check your browser console)</p>
+            <div id="console" class="console-log">
+                <div class="log">Ready to test. Click a button above...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://loreal-routine-builder.esjohn15.workers.dev/";
+        let conversationHistory = [];
+        
+        function log(message, type = 'log') {
+            const consoleDiv = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<span class="timestamp">[${timestamp}]</span>${message}`;
+            consoleDiv.appendChild(div);
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+            
+            // Also log to browser console
+            if (type === 'error') {
+                console.error(message);
+            } else if (type === 'warn') {
+                console.warn(message);
+            } else {
+                console.log(message);
+            }
+        }
+        
+        function setOutput(id, message, className) {
+            const output = document.getElementById(id);
+            output.textContent = message;
+            output.className = `output ${className}`;
+        }
+        
+        function clearAll() {
+            document.getElementById('console').innerHTML = '<div class="log">Console cleared...</div>';
+            setOutput('output1', 'Output cleared. Click a button to test...', 'info');
+        }
+        
+        async function testOilySkinQuestion() {
+            setOutput('output1', '⏳ Testing... Please wait...', 'loading');
+            log('=== STARTING TEST: Oily Skin Question ===', 'log');
+            
+            try {
+                const message = "what products should I use for my oily skin?";
+                
+                // Simulate the exact same code from script.js
+                const systemMessage = "You are a helpful L'Oréal beauty assistant. You help customers understand products and answer questions about skincare.";
+                
+                const messages = [
+                    { role: "system", content: systemMessage },
+                    ...conversationHistory,
+                    { role: "user", content: message }
+                ];
+                
+                const payload = {
+                    model: "gpt-4o",
+                    messages: messages,
+                    temperature: 0.7,
+                    max_tokens: 1500,
+                    enableWebSearch: false
+                };
+                
+                log(`Sending request to: ${WORKER_URL}`, 'log');
+                log(`Payload: ${JSON.stringify(payload, null, 2)}`, 'log');
+                
+                let response;
+                try {
+                    response = await fetch(WORKER_URL, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                    log(`✓ Fetch completed`, 'log');
+                } catch (fetchError) {
+                    log(`✗ Network fetch error: ${fetchError}`, 'error');
+                    log(`Error type: ${typeof fetchError}`, 'error');
+                    log(`Error.message: ${fetchError.message}`, 'error');
+                    throw new Error(`Network error: Unable to connect to the API. Please check your internet connection.`);
+                }
+                
+                log(`Response status: ${response.status}`, 'log');
+                log(`Response ok: ${response.ok}`, 'log');
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    log(`HTTP Error ${response.status}: ${errorText}`, 'error');
+                    throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+                }
+                
+                let data;
+                try {
+                    data = await response.json();
+                    log(`✓ JSON parsed successfully`, 'log');
+                    log(`Response data: ${JSON.stringify(data, null, 2).substring(0, 500)}...`, 'log');
+                } catch (jsonError) {
+                    log(`✗ JSON parse error: ${jsonError}`, 'error');
+                    const text = await response.text();
+                    log(`Response text: ${text}`, 'error');
+                    throw new Error(`Invalid JSON response from server`);
+                }
+                
+                if (data.choices && data.choices[0] && data.choices[0].message) {
+                    const aiResponse = data.choices[0].message.content;
+                    log(`✓ SUCCESS! Got AI response`, 'log');
+                    
+                    conversationHistory.push({ role: "user", content: message });
+                    conversationHistory.push({ role: "assistant", content: aiResponse });
+                    
+                    setOutput('output1', `✅ SUCCESS!\n\nAI Response:\n${aiResponse.substring(0, 300)}...`, 'success');
+                    log(`Full response: ${aiResponse}`, 'log');
+                } else {
+                    log(`✗ Invalid response format`, 'error');
+                    log(`API Error Response: ${JSON.stringify(data)}`, 'error');
+                    
+                    // Extract error message - same logic as script.js
+                    let errorMessage = "Invalid response from API";
+                    
+                    if (data.error) {
+                        log(`data.error exists, type: ${typeof data.error}`, 'warn');
+                        log(`data.error value: ${JSON.stringify(data.error)}`, 'warn');
+                        
+                        if (typeof data.error === 'string') {
+                            errorMessage = data.error;
+                        } else if (data.error.message) {
+                            log(`data.error.message type: ${typeof data.error.message}`, 'warn');
+                            log(`data.error.message value: ${JSON.stringify(data.error.message)}`, 'warn');
+                            errorMessage = data.error.message;
+                        } else {
+                            errorMessage = JSON.stringify(data.error);
+                        }
+                    } else if (data.message) {
+                        log(`data.message exists: ${data.message}`, 'warn');
+                        errorMessage = data.message;
+                    } else {
+                        errorMessage = JSON.stringify(data).substring(0, 200);
+                    }
+                    
+                    log(`Final error message: ${errorMessage}`, 'error');
+                    throw new Error(errorMessage);
+                }
+                
+            } catch (error) {
+                log(`=== CAUGHT ERROR ===`, 'error');
+                log(`Error object: ${error}`, 'error');
+                log(`Error type: ${typeof error}`, 'error');
+                log(`Error.message: ${error.message}`, 'error');
+                log(`Error.message type: ${typeof error.message}`, 'error');
+                
+                // Extract readable error message - same logic as script.js
+                let errorMessage = "Unknown error occurred";
+                
+                if (error.message) {
+                    if (typeof error.message === 'object') {
+                        log(`error.message is an object! Converting to JSON...`, 'warn');
+                        errorMessage = JSON.stringify(error.message);
+                    } else {
+                        errorMessage = String(error.message);
+                    }
+                } else if (typeof error === 'string') {
+                    errorMessage = error;
+                } else if (typeof error === 'object') {
+                    errorMessage = JSON.stringify(error);
+                } else {
+                    errorMessage = String(error);
+                }
+                
+                log(`Final error message displayed: ${errorMessage}`, 'error');
+                setOutput('output1', `❌ ERROR:\n\n${errorMessage}\n\nCheck the console logs above for more details!`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

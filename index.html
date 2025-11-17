@@ -8,6 +8,11 @@
       href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap"
       rel="stylesheet"
     />
+    <!-- Elegant Script Font - Inspired by Eugène Schueller's handwriting (FutureBrand) -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap"
+      rel="stylesheet"
+    />
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
@@ -33,6 +38,7 @@
         <h1 class="site-title">
           <span class="title-main">L'ORÉAL</span>
           <span class="title-subtitle">SMART ROUTINE & PRODUCT ADVISOR</span>
+          <span class="title-tagline">Create the beauty that moves the world</span>
         </h1>
         
         <!-- Quick Action Buttons / Navigation Tabs -->
@@ -58,6 +64,19 @@
             <i class="fa-solid fa-trophy"></i>
             <span>Badges</span>
             <span id="achievementCount" class="badge">0</span>
+          </button>
+          <button id="myRoutinesBtn" class="header-action-btn" title="My Saved Routines">
+            <i class="fa-solid fa-bookmark"></i>
+            <span>My Routines</span>
+            <span id="routinesCount" class="badge">0</span>
+          </button>
+          <button id="photoTrackerBtn" class="header-action-btn" title="Track Skin Progress">
+            <i class="fa-solid fa-camera"></i>
+            <span>Progress</span>
+          </button>
+          <button id="statsChartsBtn" class="header-action-btn" title="View Data & Charts">
+            <i class="fa-solid fa-chart-pie"></i>
+            <span>Charts</span>
           </button>
         </div>
       </header>
@@ -461,7 +480,143 @@
       </div>
     </div>
 
+    <!-- NEW FEATURE #1: My Routines Modal -->
+    <div id="myRoutinesModal" class="modal my-routines-modal" style="display: none;">
+      <div class="modal-content routines-modal-content">
+        <div class="routines-header">
+          <div>
+            <h2><i class="fa-solid fa-bookmark"></i> My Saved Routines</h2>
+            <p>Manage your personalized skincare routines</p>
+          </div>
+          <button class="modal-close" onclick="closeMyRoutines()">×</button>
+        </div>
+        <div id="savedRoutinesList" class="saved-routines-list"></div>
+        <div class="save-routine-section">
+          <button id="saveCurrentRoutineBtn" class="save-routine-btn">
+            <i class="fa-solid fa-plus"></i> Save Current Routine
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW FEATURE #2: Photo Progress Tracker Modal -->
+    <div id="photoTrackerModal" class="modal photo-tracker-modal" style="display: none;">
+      <div class="modal-content photo-tracker-content">
+        <div class="tracker-header">
+          <div>
+            <h2><i class="fa-solid fa-camera"></i> Skin Progress Tracker</h2>
+            <p>Track your skin journey with before/after photos</p>
+          </div>
+          <button class="modal-close" onclick="closePhotoTracker()">×</button>
+        </div>
+        
+        <div class="photo-upload-section">
+          <div class="upload-area">
+            <input type="file" id="photoUploadInput" accept="image/*" capture="user" style="display: none;">
+            <button id="uploadPhotoBtn" class="upload-photo-btn">
+              <i class="fa-solid fa-camera-retro"></i>
+              <span>Upload Progress Photo</span>
+            </button>
+            <p class="upload-hint">Take a selfie to track your skin progress over time</p>
+          </div>
+        </div>
+
+        <div id="photoTimelineContainer" class="photo-timeline-container">
+          <h3><i class="fa-solid fa-timeline"></i> Your Journey</h3>
+          <div id="photoTimeline" class="photo-timeline"></div>
+        </div>
+
+        <div id="photoComparisonSection" class="photo-comparison-section" style="display: none;">
+          <h3><i class="fa-solid fa-arrows-left-right"></i> Before & After Comparison</h3>
+          <div class="comparison-container">
+            <div class="comparison-photo before-photo">
+              <img id="beforePhoto" src="" alt="Before">
+              <span class="photo-label">Before</span>
+              <span class="photo-date" id="beforeDate"></span>
+            </div>
+            <div class="comparison-divider">
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+            <div class="comparison-photo after-photo">
+              <img id="afterPhoto" src="" alt="After">
+              <span class="photo-label">After</span>
+              <span class="photo-date" id="afterDate"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW FEATURE #3: Data Visualizations Modal -->
+    <div id="statsChartsModal" class="modal stats-charts-modal" style="display: none;">
+      <div class="modal-content charts-modal-content">
+        <div class="charts-header">
+          <div>
+            <h2><i class="fa-solid fa-chart-pie"></i> Data & Insights</h2>
+            <p>Visualize your skincare journey with beautiful charts</p>
+          </div>
+          <button class="modal-close" onclick="closeStatsCharts()">×</button>
+        </div>
+
+        <div class="charts-grid">
+          <!-- Chart 1: Product Categories Breakdown -->
+          <div class="chart-card">
+            <h3><i class="fa-solid fa-chart-pie"></i> Product Categories</h3>
+            <canvas id="categoriesChart"></canvas>
+          </div>
+
+          <!-- Chart 2: Spending Over Time -->
+          <div class="chart-card">
+            <h3><i class="fa-solid fa-chart-line"></i> Spending Trend</h3>
+            <canvas id="spendingChart"></canvas>
+          </div>
+
+          <!-- Chart 3: Top Ingredients -->
+          <div class="chart-card">
+            <h3><i class="fa-solid fa-chart-bar"></i> Most Used Ingredients</h3>
+            <canvas id="ingredientsChart"></canvas>
+          </div>
+
+          <!-- Chart 4: Usage Streak Calendar -->
+          <div class="chart-card wide-card">
+            <h3><i class="fa-solid fa-calendar-check"></i> Usage Streak Calendar</h3>
+            <div id="streakCalendar" class="streak-calendar"></div>
+          </div>
+
+          <!-- Summary Stats -->
+          <div class="chart-card stats-summary-card wide-card">
+            <h3><i class="fa-solid fa-star"></i> Quick Stats</h3>
+            <div class="stats-summary-grid">
+              <div class="stat-item">
+                <i class="fa-solid fa-shopping-bag"></i>
+                <div class="stat-value" id="totalProductsUsed">0</div>
+                <div class="stat-label">Products Tried</div>
+              </div>
+              <div class="stat-item">
+                <i class="fa-solid fa-dollar-sign"></i>
+                <div class="stat-value" id="totalSpending">$0</div>
+                <div class="stat-label">Total Investment</div>
+              </div>
+              <div class="stat-item">
+                <i class="fa-solid fa-heart"></i>
+                <div class="stat-value" id="topCategory">-</div>
+                <div class="stat-label">Favorite Category</div>
+              </div>
+              <div class="stat-item">
+                <i class="fa-solid fa-fire"></i>
+                <div class="stat-value" id="currentStreak">0</div>
+                <div class="stat-label">Day Streak</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- No secrets.js needed! API key is secure in Cloudflare Worker -->
+    
+    <!-- Chart.js Library for Data Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     
     <!-- HTML2Canvas for Instagram Share Cards -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>

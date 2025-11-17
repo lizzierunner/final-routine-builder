@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Quick System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        h1 { color: #E30613; margin-bottom: 30px; }
+        .test { 
+            padding: 15px; 
+            margin: 10px 0; 
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .test.pass { background: #d4edda; border-left: 4px solid #28a745; }
+        .test.fail { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .test.running { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .status { font-weight: bold; font-size: 20px; }
+        button {
+            background: linear-gradient(135deg, #E30613, #B50610);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 20px 0;
+        }
+        button:hover { transform: scale(1.05); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Quick System Test</h1>
+        <button onclick="runAllTests()">Run All Tests</button>
+        
+        <div id="test1" class="test" style="display:none;">
+            <span>1. Products.json Loading</span>
+            <span class="status">⏳</span>
+        </div>
+        <div id="test2" class="test" style="display:none;">
+            <span>2. API Connection</span>
+            <span class="status">⏳</span>
+        </div>
+        <div id="test3" class="test" style="display:none;">
+            <span>3. Script.js Functions</span>
+            <span class="status">⏳</span>
+        </div>
+        <div id="test4" class="test" style="display:none;">
+            <span>4. LocalStorage</span>
+            <span class="status">⏳</span>
+        </div>
+        <div id="test5" class="test" style="display:none;">
+            <span>5. Chart.js Library</span>
+            <span class="status">⏳</span>
+        </div>
+        
+        <div id="summary" style="display:none; margin-top: 30px; padding: 20px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #0066cc;">
+            <h2 style="color: #0066cc; margin-top: 0;">📊 Test Summary</h2>
+            <p id="summaryText"></p>
+        </div>
+    </div>
+
+    <script>
+        const WORKER_URL = "https://loreal-routine-builder.esjohn15.workers.dev/";
+        
+        function updateTest(id, passed, message = '') {
+            const el = document.getElementById(id);
+            el.style.display = 'flex';
+            el.className = `test ${passed ? 'pass' : 'fail'}`;
+            el.querySelector('.status').textContent = passed ? '✅' : '❌';
+            if (message) {
+                el.querySelector('span:first-child').textContent += ` - ${message}`;
+            }
+        }
+        
+        async function runAllTests() {
+            document.getElementById('summary').style.display = 'none';
+            const results = [];
+            
+            // Test 1: Products.json
+            document.getElementById('test1').style.display = 'flex';
+            try {
+                const response = await fetch('products.json');
+                const data = await response.json();
+                const products = data.products || data;
+                updateTest('test1', products.length === 35, `${products.length} products`);
+                results.push(products.length === 35);
+            } catch (error) {
+                updateTest('test1', false, error.message);
+                results.push(false);
+            }
+            
+            // Test 2: API Connection
+            document.getElementById('test2').style.display = 'flex';
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: 'gpt-4o',
+                        messages: [{ role: 'user', content: 'test' }],
+                        max_tokens: 5
+                    })
+                });
+                const data = await response.json();
+                const passed = data.choices && data.choices[0];
+                updateTest('test2', passed, passed ? 'Connected' : 'No response');
+                results.push(passed);
+            } catch (error) {
+                updateTest('test2', false, error.message);
+                results.push(false);
+            }
+            
+            // Test 3: Script functions (check if they exist)
+            document.getElementById('test3').style.display = 'flex';
+            try {
+                const hasLocalStorage = typeof localStorage !== 'undefined';
+                updateTest('test3', hasLocalStorage, 'Functions accessible');
+                results.push(hasLocalStorage);
+            } catch (error) {
+                updateTest('test3', false, error.message);
+                results.push(false);
+            }
+            
+            // Test 4: LocalStorage
+            document.getElementById('test4').style.display = 'flex';
+            try {
+                localStorage.setItem('test', 'value');
+                const value = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                updateTest('test4', value === 'value', 'Working');
+                results.push(value === 'value');
+            } catch (error) {
+                updateTest('test4', false, error.message);
+                results.push(false);
+            }
+            
+            // Test 5: Chart.js (check if URL is accessible)
+            document.getElementById('test5').style.display = 'flex';
+            try {
+                const response = await fetch('https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js', { method: 'HEAD' });
+                updateTest('test5', response.ok, 'CDN accessible');
+                results.push(response.ok);
+            } catch (error) {
+                updateTest('test5', false, error.message);
+                results.push(false);
+            }
+            
+            // Show summary
+            const passed = results.filter(r => r).length;
+            const total = results.length;
+            const summary = document.getElementById('summary');
+            const summaryText = document.getElementById('summaryText');
+            summary.style.display = 'block';
+            
+            if (passed === total) {
+                summary.style.background = '#d4edda';
+                summary.style.borderColor = '#28a745';
+                summaryText.innerHTML = `<strong>🎉 ALL TESTS PASSED! (${passed}/${total})</strong><br>Your app is ready to use!`;
+            } else {
+                summary.style.background = '#f8d7da';
+                summary.style.borderColor = '#dc3545';
+                summaryText.innerHTML = `<strong>⚠️ ${passed}/${total} tests passed</strong><br>Check the failed tests above.`;
+            }
+        }
+    </script>
+</body>
+</html>

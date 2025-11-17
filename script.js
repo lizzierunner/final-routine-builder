@@ -603,21 +603,43 @@ async function sendToOpenAI(userMessage, includeProducts = false, enableWebSearc
   /* Make request to Cloudflare Worker (which routes to OpenAI or Mistral)
      OpenAI for standard chat, Mistral for web search
      NO API KEYS are exposed in the browser! */
-  const response = await fetch(WORKER_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "gpt-4o", // Used when routing to OpenAI
-      messages: messages,
-      temperature: 0.7,
-      max_tokens: 1500,
-      enableWebSearch: enableWebSearch, // If true, uses Mistral; if false, uses OpenAI
-    }),
-  });
+  let response;
+  try {
+    response = await fetch(WORKER_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "gpt-4o", // Used when routing to OpenAI
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 1500,
+        enableWebSearch: enableWebSearch, // If true, uses Mistral; if false, uses OpenAI
+      }),
+    });
+  } catch (fetchError) {
+    console.error("Network fetch error:", fetchError);
+    throw new Error(`Network error: Unable to connect to the API. Please check your internet connection.`);
+  }
 
-  const data = await response.json();
+  /* Check if the response is OK */
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error(`HTTP Error ${response.status}:`, errorText);
+    throw new Error(`Server error (${response.status}): ${errorText.substring(0, 100)}`);
+  }
+
+  let data;
+  try {
+    data = await response.json();
+    console.log("API Response Data:", data);
+  } catch (jsonError) {
+    console.error("JSON parse error:", jsonError);
+    const text = await response.text();
+    console.error("Response text:", text);
+    throw new Error(`Invalid JSON response from server`);
+  }
 
   /* Check if we got a valid response */
   if (data.choices && data.choices[0] && data.choices[0].message) {
@@ -641,7 +663,25 @@ async function sendToOpenAI(userMessage, includeProducts = false, enableWebSearc
   } else {
     /* Log the full error response for debugging */
     console.error("API Error Response:", data);
-    throw new Error(data.error?.message || "Invalid response from API");
+    
+    /* Extract error message - handle various error response formats */
+    let errorMessage = "Invalid response from API";
+    
+    if (data.error) {
+      if (typeof data.error === 'string') {
+        errorMessage = data.error;
+      } else if (data.error.message) {
+        errorMessage = data.error.message;
+      } else {
+        errorMessage = JSON.stringify(data.error);
+      }
+    } else if (data.message) {
+      errorMessage = data.message;
+    } else {
+      errorMessage = JSON.stringify(data).substring(0, 200);
+    }
+    
+    throw new Error(errorMessage);
   }
 }
 
@@ -710,7 +750,7 @@ Format the response as a clear, numbered step-by-step routine I can follow daily
     /* Handle errors (e.g., invalid API key, network issues) */
     removeLoading();
     addMessage(
-      "Sorry, I encountered an error generating your routine. Please check your API key and try again."
+      `Sorry, I encountered an error generating your routine: ${error.message}. Please try again.`
     );
     console.error("Error generating routine:", error);
   }
@@ -749,10 +789,35 @@ chatForm.addEventListener("submit", async (e) => {
     addMessage(result.response, false, result.searchResults);
   } catch (error) {
     removeLoading();
+    
+    /* Extract a readable error message */
+    let errorMessage = "Unknown error occurred";
+    
+    /* Log the full error for debugging */
+    console.error("Chat Error Details:", error);
+    console.error("Error type:", typeof error);
+    console.error("Error.message type:", typeof error.message);
+    console.error("Error.message value:", error.message);
+    
+    if (error.message) {
+      /* Check if error.message is itself an object */
+      if (typeof error.message === 'object') {
+        errorMessage = JSON.stringify(error.message);
+      } else {
+        errorMessage = String(error.message);
+      }
+    } else if (typeof error === 'string') {
+      errorMessage = error;
+    } else if (typeof error === 'object') {
+      errorMessage = JSON.stringify(error);
+    } else {
+      errorMessage = String(error);
+    }
+    
     addMessage(
-      "Sorry, I encountered an error. Please check your API key and try again."
+      `Sorry, I encountered an error: ${errorMessage}. Please try again.`
     );
-    console.error("Error:", error);
+    console.error("Final error message displayed:", errorMessage);
   }
 });
 
@@ -3257,3 +3322,694 @@ updateAchievementCount();
 
 /* Track achievements throughout the app */
 /* These will trigger automatically based on user actions */
+
+/* ========================================
+   NEW FEATURE #1: MY ROUTINES MANAGER
+   Save and load custom named routines
+   ======================================== */
+
+/* LocalStorage key for saved routines */
+const STORAGE_KEY_ROUTINES = "loreal_saved_routines";
+
+/* Array to store saved routines */
+let savedRoutines = [];
+
+/* Available emoji icons for routines */
+const routineIcons = ['✨', '☀️', '🌙', '💪', '🌸', '🌿', '💧', '🔥', '⭐', '💖', '🌺', '🍃', '🌟', '💫', '🦋', '🌼'];
+
+/* Load saved routines from localStorage */
+function loadSavedRoutines() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_ROUTINES);
+    if (saved) {
+      savedRoutines = JSON.parse(saved);
+      console.log(`Loaded ${savedRoutines.length} saved routine(s)`);
+      updateRoutinesCount();
+    }
+  } catch (error) {
+    console.error("Error loading saved routines:", error);
+  }
+}
+
+/* Save routines to localStorage */
+function saveSavedRoutines() {
+  try {
+    localStorage.setItem(STORAGE_KEY_ROUTINES, JSON.stringify(savedRoutines));
+    updateRoutinesCount();
+    console.log(`Saved ${savedRoutines.length} routine(s) to localStorage`);
+  } catch (error) {
+    console.error("Error saving routines:", error);
+  }
+}
+
+/* Update routines count badge */
+function updateRoutinesCount() {
+  const countBadge = document.getElementById('routinesCount');
+  if (countBadge) {
+    countBadge.textContent = savedRoutines.length;
+    countBadge.style.display = savedRoutines.length > 0 ? 'inline-block' : 'none';
+  }
+}
+
+/* Show My Routines modal */
+function showMyRoutines() {
+  const modal = document.getElementById('myRoutinesModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderSavedRoutinesList();
+}
+
+/* Close My Routines modal */
+function closeMyRoutines() {
+  document.getElementById('myRoutinesModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+/* Render the list of saved routines */
+function renderSavedRoutinesList() {
+  const container = document.getElementById('savedRoutinesList');
+  
+  if (savedRoutines.length === 0) {
+    container.innerHTML = `
+      <div class="empty-routines-message">
+        <i class="fa-solid fa-bookmark"></i>
+        <p style="font-size: 18px; font-weight: 600; margin-top: 10px;">No Saved Routines Yet</p>
+        <p>Create your first routine below!</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = savedRoutines.map((routine, index) => `
+    <div class="routine-card" data-index="${index}">
+      <div class="routine-card-header">
+        <div class="routine-icon">${routine.icon}</div>
+        <div class="routine-info">
+          <h3>${routine.name}</h3>
+          <div class="routine-meta">
+            <span><i class="fa-solid fa-box"></i> ${routine.products.length} products</span>
+            <span><i class="fa-solid fa-calendar"></i> ${new Date(routine.date).toLocaleDateString()}</span>
+          </div>
+        </div>
+      </div>
+      <div class="routine-products-preview">
+        ${routine.products.slice(0, 5).map(p => `
+          <span class="routine-product-tag">${p.name}</span>
+        `).join('')}
+        ${routine.products.length > 5 ? `<span class="routine-product-tag">+${routine.products.length - 5} more</span>` : ''}
+      </div>
+      <div class="routine-actions">
+        <button class="routine-action-btn routine-load-btn" onclick="loadRoutine(${index})">
+          <i class="fa-solid fa-download"></i> Load
+        </button>
+        <button class="routine-action-btn routine-delete-btn" onclick="deleteRoutine(${index})">
+          <i class="fa-solid fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* Show save routine dialog */
+function showSaveRoutineDialog() {
+  if (selectedProducts.length === 0) {
+    addMessage("Please select at least one product before saving a routine.");
+    return;
+  }
+
+  /* Create dialog overlay */
+  const overlay = document.createElement('div');
+  overlay.className = 'modal-overlay';
+  overlay.style.cssText = 'position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 10001; display: flex; align-items: center; justify-content: center;';
+  
+  /* Create dialog */
+  const dialog = document.createElement('div');
+  dialog.className = 'routine-name-dialog';
+  dialog.innerHTML = `
+    <h3><i class="fa-solid fa-bookmark"></i> Save Routine</h3>
+    <input 
+      type="text" 
+      id="routineNameInput" 
+      class="routine-name-input" 
+      placeholder="e.g., My Morning Glow ✨" 
+      value="My Routine ${savedRoutines.length + 1}"
+      maxlength="50"
+    />
+    <div class="routine-icon-picker">
+      <label>Choose an Icon:</label>
+      <div class="icon-options">
+        ${routineIcons.map((icon, i) => `
+          <button class="icon-option ${i === 0 ? 'selected' : ''}" data-icon="${icon}" onclick="selectRoutineIcon(this)">
+            ${icon}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+    <div class="dialog-actions">
+      <button class="dialog-btn dialog-btn-secondary" onclick="closeSaveRoutineDialog()">Cancel</button>
+      <button class="dialog-btn dialog-btn-primary" onclick="confirmSaveRoutine()">
+        <i class="fa-solid fa-check"></i> Save Routine
+      </button>
+    </div>
+  `;
+  
+  overlay.appendChild(dialog);
+  document.body.appendChild(overlay);
+  overlay.id = 'saveRoutineOverlay';
+  
+  /* Focus input */
+  setTimeout(() => {
+    document.getElementById('routineNameInput').select();
+  }, 100);
+}
+
+/* Select routine icon */
+function selectRoutineIcon(btn) {
+  document.querySelectorAll('.icon-option').forEach(el => el.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+
+/* Close save routine dialog */
+function closeSaveRoutineDialog() {
+  const overlay = document.getElementById('saveRoutineOverlay');
+  if (overlay) {
+    overlay.remove();
+  }
+}
+
+/* Confirm and save routine */
+function confirmSaveRoutine() {
+  const nameInput = document.getElementById('routineNameInput');
+  const selectedIcon = document.querySelector('.icon-option.selected');
+  
+  const routine = {
+    name: nameInput.value.trim() || `My Routine ${savedRoutines.length + 1}`,
+    icon: selectedIcon ? selectedIcon.dataset.icon : '✨',
+    products: selectedProducts.map(p => ({ id: p.id, name: p.name, brand: p.brand })),
+    date: Date.now()
+  };
+
+  savedRoutines.push(routine);
+  saveSavedRoutines();
+  closeSaveRoutineDialog();
+  
+  /* Show success message */
+  showToast(`✅ Routine "${routine.name}" saved successfully!`);
+  showConfetti();
+  
+  /* Refresh modal if open */
+  if (document.getElementById('myRoutinesModal').style.display === 'flex') {
+    renderSavedRoutinesList();
+  }
+}
+
+/* Load a saved routine */
+function loadRoutine(index) {
+  const routine = savedRoutines[index];
+  if (!routine) return;
+
+  /* Clear current selection */
+  selectedProducts = [];
+  
+  /* Find and select the products */
+  routine.products.forEach(savedProduct => {
+    const product = allProducts.find(p => p.id === savedProduct.id);
+    if (product && !selectedProducts.some(p => p.id === product.id)) {
+      selectedProducts.push(product);
+    }
+  });
+
+  /* Update UI */
+  saveSelectedProductsToStorage();
+  renderProducts();
+  updateSelectedProductsList();
+  updateCostSummary();
+  closeMyRoutines();
+  
+  /* Show success */
+  showToast(`✅ Loaded routine "${routine.name}" with ${selectedProducts.length} products!`);
+  
+  /* Scroll to products */
+  document.querySelector('.selected-products').scrollIntoView({ behavior: 'smooth' });
+}
+
+/* Delete a routine */
+function deleteRoutine(index) {
+  const routine = savedRoutines[index];
+  if (!confirm(`Delete routine "${routine.name}"?`)) return;
+
+  savedRoutines.splice(index, 1);
+  saveSavedRoutines();
+  renderSavedRoutinesList();
+  showToast(`🗑️ Routine deleted`);
+}
+
+/* Add event listeners */
+const myRoutinesBtn = document.getElementById('myRoutinesBtn');
+if (myRoutinesBtn) {
+  myRoutinesBtn.addEventListener('click', showMyRoutines);
+}
+
+const saveCurrentRoutineBtn = document.getElementById('saveCurrentRoutineBtn');
+if (saveCurrentRoutineBtn) {
+  saveCurrentRoutineBtn.addEventListener('click', showSaveRoutineDialog);
+}
+
+/* ========================================
+   NEW FEATURE #2: PHOTO PROGRESS TRACKER
+   Track skin journey with before/after photos
+   ======================================== */
+
+/* LocalStorage key for photos */
+const STORAGE_KEY_PHOTOS = "loreal_progress_photos";
+
+/* Array to store progress photos */
+let progressPhotos = [];
+
+/* Load photos from localStorage */
+function loadProgressPhotos() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_PHOTOS);
+    if (saved) {
+      progressPhotos = JSON.parse(saved);
+      console.log(`Loaded ${progressPhotos.length} progress photo(s)`);
+    }
+  } catch (error) {
+    console.error("Error loading photos:", error);
+  }
+}
+
+/* Save photos to localStorage */
+function saveProgressPhotos() {
+  try {
+    localStorage.setItem(STORAGE_KEY_PHOTOS, JSON.stringify(progressPhotos));
+    console.log(`Saved ${progressPhotos.length} photo(s) to localStorage`);
+  } catch (error) {
+    console.error("Error saving photos:", error);
+  }
+}
+
+/* Show photo tracker modal */
+function showPhotoTracker() {
+  const modal = document.getElementById('photoTrackerModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  renderPhotoTimeline();
+  updatePhotoComparison();
+}
+
+/* Close photo tracker modal */
+function closePhotoTracker() {
+  document.getElementById('photoTrackerModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+}
+
+/* Handle photo upload */
+function handlePhotoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const photo = {
+      id: Date.now(),
+      imageData: e.target.result,
+      date: Date.now(),
+      notes: ''
+    };
+
+    progressPhotos.push(photo);
+    saveProgressPhotos();
+    renderPhotoTimeline();
+    updatePhotoComparison();
+    showToast('📸 Progress photo added!');
+    showConfetti();
+  };
+
+  reader.readAsDataURL(file);
+  event.target.value = ''; /* Reset input */
+}
+
+/* Render photo timeline */
+function renderPhotoTimeline() {
+  const timeline = document.getElementById('photoTimeline');
+  
+  if (progressPhotos.length === 0) {
+    timeline.innerHTML = `
+      <div class="empty-timeline-message" style="grid-column: 1/-1;">
+        <i class="fa-solid fa-camera"></i>
+        <p style="font-size: 18px; font-weight: 600; margin-top: 10px;">No Photos Yet</p>
+        <p>Start tracking your skin progress by uploading your first photo!</p>
+      </div>
+    `;
+    return;
+  }
+
+  /* Sort photos by date (newest first) */
+  const sorted = [...progressPhotos].sort((a, b) => b.date - a.date);
+
+  timeline.innerHTML = sorted.map(photo => `
+    <div class="photo-timeline-item" onclick="selectPhotoForComparison(${photo.id})">
+      <img src="${photo.imageData}" alt="Progress photo from ${new Date(photo.date).toLocaleDateString()}">
+      <div class="photo-timeline-info">
+        <div class="photo-timeline-date">${new Date(photo.date).toLocaleDateString()}</div>
+        ${photo.notes ? `<div class="photo-timeline-notes">${photo.notes}</div>` : ''}
+      </div>
+      <button class="photo-delete-btn" onclick="deletePhoto(${photo.id}, event)" title="Delete photo">
+        <i class="fa-solid fa-trash"></i>
+      </button>
+    </div>
+  `).join('');
+}
+
+/* Delete a photo */
+function deletePhoto(photoId, event) {
+  event.stopPropagation();
+  
+  if (!confirm('Delete this photo?')) return;
+
+  progressPhotos = progressPhotos.filter(p => p.id !== photoId);
+  saveProgressPhotos();
+  renderPhotoTimeline();
+  updatePhotoComparison();
+  showToast('🗑️ Photo deleted');
+}
+
+/* Update before/after comparison */
+function updatePhotoComparison() {
+  const section = document.getElementById('photoComparisonSection');
+  
+  if (progressPhotos.length < 2) {
+    section.style.display = 'none';
+    return;
+  }
+
+  section.style.display = 'block';
+
+  /* Get oldest and newest photos */
+  const sorted = [...progressPhotos].sort((a, b) => a.date - b.date);
+  const oldestPhoto = sorted[0];
+  const newestPhoto = sorted[sorted.length - 1];
+
+  document.getElementById('beforePhoto').src = oldestPhoto.imageData;
+  document.getElementById('beforeDate').textContent = new Date(oldestPhoto.date).toLocaleDateString();
+  document.getElementById('afterPhoto').src = newestPhoto.imageData;
+  document.getElementById('afterDate').textContent = new Date(newestPhoto.date).toLocaleDateString();
+}
+
+/* Add event listeners */
+const photoTrackerBtn = document.getElementById('photoTrackerBtn');
+if (photoTrackerBtn) {
+  photoTrackerBtn.addEventListener('click', showPhotoTracker);
+}
+
+const uploadPhotoBtn = document.getElementById('uploadPhotoBtn');
+const photoUploadInput = document.getElementById('photoUploadInput');
+if (uploadPhotoBtn && photoUploadInput) {
+  uploadPhotoBtn.addEventListener('click', () => photoUploadInput.click());
+  photoUploadInput.addEventListener('change', handlePhotoUpload);
+}
+
+/* ========================================
+   NEW FEATURE #3: DATA VISUALIZATIONS
+   Beautiful charts showing routine insights
+   ======================================== */
+
+/* Chart instances */
+let categoriesChart = null;
+let spendingChart = null;
+let ingredientsChart = null;
+
+/* Show stats charts modal */
+function showStatsCharts() {
+  const modal = document.getElementById('statsChartsModal');
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  
+  /* Small delay to ensure modal is visible before creating charts */
+  setTimeout(() => {
+    createCategoriesChart();
+    createSpendingChart();
+    createIngredientsChart();
+    createStreakCalendar();
+    updateQuickStats();
+  }, 100);
+}
+
+/* Close stats charts modal */
+function closeStatsCharts() {
+  document.getElementById('statsChartsModal').style.display = 'none';
+  document.body.style.overflow = 'auto';
+  
+  /* Destroy charts to free memory */
+  if (categoriesChart) categoriesChart.destroy();
+  if (spendingChart) spendingChart.destroy();
+  if (ingredientsChart) ingredientsChart.destroy();
+}
+
+/* Create product categories pie chart */
+function createCategoriesChart() {
+  const ctx = document.getElementById('categoriesChart');
+  if (!ctx) return;
+
+  /* Count products by category */
+  const categoryCounts = {};
+  selectedProducts.forEach(product => {
+    const cat = product.category || 'Other';
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+  });
+
+  const labels = Object.keys(categoryCounts);
+  const data = Object.values(categoryCounts);
+
+  /* Destroy existing chart */
+  if (categoriesChart) categoriesChart.destroy();
+
+  categoriesChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: data,
+        backgroundColor: [
+          '#E30613', '#D4AF37', '#B76E79', '#8B1538',
+          '#F7E7CE', '#FF6384', '#36A2EB', '#FFCE56',
+          '#4BC0C0', '#9966FF'
+        ],
+        borderWidth: 2,
+        borderColor: '#fff'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 15,
+            font: { size: 12, weight: '600' }
+          }
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              const percentage = ((context.parsed / total) * 100).toFixed(1);
+              return `${context.label}: ${context.parsed} products (${percentage}%)`;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* Create spending over time line chart */
+function createSpendingChart() {
+  const ctx = document.getElementById('spendingChart');
+  if (!ctx) return;
+
+  /* Simulate spending data over last 6 months */
+  const months = ['June', 'July', 'Aug', 'Sept', 'Oct', 'Nov'];
+  const spendingData = [45, 67, 89, 123, 156, selectedProducts.reduce((sum, p) => sum + (p.price || 0), 0)];
+
+  /* Destroy existing chart */
+  if (spendingChart) spendingChart.destroy();
+
+  spendingChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{
+        label: 'Total Spending ($)',
+        data: spendingData,
+        borderColor: '#E30613',
+        backgroundColor: 'rgba(227, 6, 19, 0.1)',
+        tension: 0.4,
+        fill: true,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: '#E30613',
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false
+        },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              return `$${context.parsed.y.toFixed(2)}`;
+            }
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: function(value) {
+              return '$' + value;
+            }
+          }
+        }
+      }
+    }
+  });
+}
+
+/* Create top ingredients bar chart */
+function createIngredientsChart() {
+  const ctx = document.getElementById('ingredientsChart');
+  if (!ctx) return;
+
+  /* Count ingredient frequency */
+  const ingredientCounts = {};
+  selectedProducts.forEach(product => {
+    if (product.ingredients && Array.isArray(product.ingredients)) {
+      product.ingredients.forEach(ing => {
+        ingredientCounts[ing] = (ingredientCounts[ing] || 0) + 1;
+      });
+    }
+  });
+
+  /* Get top 8 ingredients */
+  const sorted = Object.entries(ingredientCounts)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+
+  const labels = sorted.map(([ing]) => ing);
+  const data = sorted.map(([, count]) => count);
+
+  /* Destroy existing chart */
+  if (ingredientsChart) ingredientsChart.destroy();
+
+  ingredientsChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Times Used',
+        data: data,
+        backgroundColor: '#D4AF37',
+        borderColor: '#B8941F',
+        borderWidth: 2,
+        borderRadius: 8
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            stepSize: 1
+          }
+        }
+      }
+    }
+  });
+}
+
+/* Create usage streak calendar */
+function createStreakCalendar() {
+  const calendar = document.getElementById('streakCalendar');
+  if (!calendar) return;
+
+  /* Generate last 28 days */
+  const today = new Date();
+  const days = [];
+  
+  for (let i = 27; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    days.push(date);
+  }
+
+  calendar.innerHTML = days.map((date, index) => {
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'short' });
+    const dayNum = date.getDate();
+    const isToday = date.toDateString() === today.toDateString();
+    const isActive = Math.random() > 0.3; /* Simulate usage */
+    
+    return `
+      <div class="calendar-day ${isActive ? 'active' : ''} ${isToday ? 'today' : ''}" title="${date.toLocaleDateString()}">
+        <div class="calendar-day-label">${dayName}</div>
+        <div class="calendar-day-number">${dayNum}</div>
+      </div>
+    `;
+  }).join('');
+}
+
+/* Update quick stats */
+function updateQuickStats() {
+  /* Total products */
+  document.getElementById('totalProductsUsed').textContent = selectedProducts.length;
+
+  /* Total spending */
+  const totalSpent = selectedProducts.reduce((sum, p) => sum + (p.price || 0), 0);
+  document.getElementById('totalSpending').textContent = `$${totalSpent.toFixed(0)}`;
+
+  /* Top category */
+  const categoryCounts = {};
+  selectedProducts.forEach(p => {
+    const cat = p.category || 'Other';
+    categoryCounts[cat] = (categoryCounts[cat] || 0) + 1;
+  });
+  const topCat = Object.entries(categoryCounts).sort((a, b) => b[1] - a[1])[0];
+  document.getElementById('topCategory').textContent = topCat ? topCat[0] : '-';
+
+  /* Current streak (from analytics) */
+  const streak = analyticsData.usageStreak || 0;
+  document.getElementById('currentStreak').textContent = streak;
+}
+
+/* Add event listener */
+const statsChartsBtn = document.getElementById('statsChartsBtn');
+if (statsChartsBtn) {
+  statsChartsBtn.addEventListener('click', showStatsCharts);
+}
+
+/* ========================================
+   INITIALIZE NEW FEATURES
+   Load saved data on page load
+   ======================================== */
+
+/* Load saved routines and photos */
+loadSavedRoutines();
+loadProgressPhotos();
+
+console.log('✨ New features initialized: My Routines, Photo Tracker, Data Charts');
+
