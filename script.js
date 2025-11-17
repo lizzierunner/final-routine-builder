@@ -587,12 +587,21 @@ async function sendToOpenAI(userMessage, includeProducts = false, enableWebSearc
     /* Add detailed product information to the system message
        This gives the AI context about which products the user selected */
     const productDetails = selectedProducts
-      .map((p) => `- ${p.brand} ${p.name}: ${p.description}`)
-      .join("\n");
+      .map((p, index) => {
+        let details = `${index + 1}. ${p.brand} ${p.name}`;
+        if (p.description) details += `\n   Description: ${p.description}`;
+        if (p.category) details += `\n   Category: ${p.category}`;
+        if (p.ingredients && p.ingredients.length > 0) {
+          details += `\n   Key Ingredients: ${p.ingredients.join(', ')}`;
+        }
+        if (p.price) details += `\n   Price: $${p.price}`;
+        return details;
+      })
+      .join("\n\n");
     
-    systemMessage += `\n\nThe customer has selected the following products:\n${productDetails}`;
+    systemMessage += `\n\nThe customer has selected ${selectedProducts.length} product(s) for their routine:\n${productDetails}`;
     
-    console.log(`Sending ${selectedProducts.length} product(s) to AI:`, selectedProducts.map(p => p.name));
+    console.log(`Sending ${selectedProducts.length} product(s) to AI with full details:`, selectedProducts.map(p => p.name));
   }
 
   /* Create the messages array for the API request
