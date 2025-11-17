@@ -166,11 +166,19 @@ function displayProducts(products) {
   const productCards = document.querySelectorAll(".product-card");
   productCards.forEach((card) => {
     card.addEventListener("click", (e) => {
-      /* Don't toggle selection if clicking the info button or favorite button */
-      if (!e.target.closest('.details-btn') && !e.target.closest('.favorite-heart')) {
+      /* Don't toggle selection if clicking these specific elements */
+      if (
+        !e.target.closest('.details-btn') && 
+        !e.target.closest('.favorite-heart') &&
+        !e.target.closest('.compare-checkbox') &&
+        !e.target.closest('button')
+      ) {
         toggleProductSelection(card);
       }
     });
+    
+    /* Add visual feedback on hover for better UX */
+    card.style.cursor = 'pointer';
   });
 
   /* Re-apply selected state to cards that are already selected */

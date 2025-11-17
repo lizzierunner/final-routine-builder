@@ -1776,6 +1776,52 @@ body::after {
   border-color: rgba(212, 175, 55, 0.2);
 }
 
+/* Hint that card is clickable when not selected */
+.product-card:not(.selected):hover::before {
+  content: "Click to select";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(227, 6, 19, 0.95);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  animation: fadeInHint 0.3s ease-in-out 0.5s forwards;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes fadeInHint {
+  to {
+    opacity: 1;
+  }
+}
+
+/* Hint for selected cards */
+.product-card.selected:hover::before {
+  content: "Click to deselect";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  opacity: 0;
+  animation: fadeInHint 0.3s ease-in-out 0.5s forwards;
+  z-index: 100;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
 .product-image-area {
   background: linear-gradient(135deg, 
     rgba(255, 248, 240, 1) 0%,
